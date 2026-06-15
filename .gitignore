@@ -1,15 +1,29 @@
+# Serpent runtime artifacts
 datasets/
 ml_models/
 
-.idea
+# Editors
+.idea/
+.vscode/
 
+# Python
 __pycache__/
 *.py[cod]
+*.egg-info/
+build/
+dist/
 
+# uv / venv
+.venv/
+
+# Tooling caches
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+
+# Notebooks
 .ipynb_checkpoints/
-
-.python-version
-
 *.ipynb
 
+# Local config
 config/config.private.yml
