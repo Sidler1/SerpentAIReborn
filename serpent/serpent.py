@@ -234,12 +234,20 @@ def grab_frames(width, height, x_offset, y_offset, pipeline_string=None):
     frame_grabber.start()
 
 
+def _plugin_module(plugin_name):
+    plugins_dir = offshoot.config["file_paths"]["plugins"]
+    return f"{plugins_dir.replace(os.sep, '.')}.{plugin_name}.plugin"
+
+
 def activate(plugin_name):
-    subprocess.call(shlex.split(f"offshoot install {plugin_name}"))
+    # offshoot is vendored (no `offshoot` console script); run the plugin's
+    # install hook directly. `python -m` puts the CWD on sys.path so `plugins.*`
+    # resolves.
+    subprocess.call([sys.executable, "-m", _plugin_module(plugin_name), "install"])
 
 
 def deactivate(plugin_name):
-    subprocess.call(shlex.split(f"offshoot uninstall {plugin_name}"))
+    subprocess.call([sys.executable, "-m", _plugin_module(plugin_name), "uninstall"])
 
 
 def plugins():
