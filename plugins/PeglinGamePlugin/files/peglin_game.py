@@ -27,13 +27,13 @@ class SerpentPeglinGame(Game, metaclass=Singleton):
 
     @property
     def screen_regions(self):
-        # (top, left, bottom, right) for a 1280x720 *windowed* game. PEG_BOARD
-        # mirrors helpers/vision.DEFAULT_BOARD; the rest are best-guess starting
-        # points — calibrate with `serpent capture region Peglin` once running.
+        # (top, left, bottom, right), calibrated to a 1280x720 *windowed* Forest
+        # combat frame. PEG_BOARD matches helpers/vision.DEFAULT_BOARD.
         return {
-            "ENEMY_AREA": (0, 256, 108, 1024),   # enemies across the top
-            "PEG_BOARD": (108, 256, 648, 1024),  # central peg field (agent's board)
-            "PLAYER_HP": (650, 0, 720, 320),     # bottom-left HUD
-            "ENEMY_HP": (0, 256, 40, 1024),      # enemy health bars
-            "ORB_COUNT": (650, 960, 720, 1280),  # bottom-right HUD
+            "ENEMY_AREA": (0, 0, 210, 1280),       # forest band: enemies + player
+            "PEG_BOARD": (216, 416, 590, 1011),    # dark-blue peg field
+            "PLAYER_HP": (232, 128, 270, 308),     # "100/100" bar, left panel
+            "ENEMY_HP": (118, 895, 152, 1075),     # enemy "60/60" bars, top-right
+            "ORB_INFO": (300, 90, 520, 310),       # current-orb parchment
+            "UPCOMING_ENEMIES": (290, 1045, 440, 1235),
         }

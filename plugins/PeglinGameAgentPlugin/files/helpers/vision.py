@@ -1,58 +1,74 @@
 """Peglin frame analysis.
 
-The peg board is the part of the frame the agent reasons about. ``detect_pegs``
-finds the circular pegs inside a board sub-region using Laplacian-of-Gaussian blob
-detection on the grayscale image — no per-game colour calibration required to get
-started (refine with a colour mask once a real frame is available).
+Pegs are bright dots on the dark-blue board: **white** (normal), **green**
+(special/refresh) and **orange/gold** (crit). We isolate them with a brightness
+mask over the board region, label connected components, keep peg-sized roughly
+circular blobs, and classify each by colour. Coordinates are frame pixels
+(relative to the captured game window).
 
-Coordinates returned are in **frame pixels** (relative to the captured game
-window, origin top-left), so the agent only needs to add the window offset to
-click.
+Calibrated against a 1280x720 Forest combat frame.
 """
 
 from __future__ import annotations
 
 import numpy as np
-import skimage.color
-import skimage.feature
+import skimage.measure
 
-# Board region as fractions of the window (top, left, bottom, right). The peg
-# field sits in the centre; tighten these once calibrated to a real 1280x720 frame.
-DEFAULT_BOARD = (0.15, 0.20, 0.90, 0.80)
+# Board region (the dark-blue peg field) as fractions of the window
+# (top, left, bottom, right) — excludes the side panels / launcher / HUD.
+DEFAULT_BOARD = (0.30, 0.325, 0.82, 0.79)
+
+# A peg blob's pixel area (the round pegs are ~12-18 px across); filters out
+# texture speckle (too small) and the long peg-arcs / bombs (too big).
+MIN_PEG_AREA = 40
+MAX_PEG_AREA = 700
+
+# Pixels brighter than this (max RGB channel) are peg/foreground vs dark board.
+BRIGHTNESS_THRESHOLD = 150
 
 
 def board_box(frame_shape, board=DEFAULT_BOARD):
-    """Convert fractional board bounds to absolute pixel (top, left, bottom, right)."""
+    """Fractional board bounds -> absolute pixel (top, left, bottom, right)."""
     height, width = frame_shape[0], frame_shape[1]
     top, left, bottom, right = board
-    return (
-        int(top * height),
-        int(left * width),
-        int(bottom * height),
-        int(right * width),
-    )
+    return int(top * height), int(left * width), int(bottom * height), int(right * width)
 
 
-def detect_pegs(frame, board=DEFAULT_BOARD, min_sigma=2.0, max_sigma=8.0, threshold=0.08):
-    """Return detected peg centres as ``[(x, y), ...]`` in frame-pixel coordinates."""
+def _classify(rgb):
+    r, g, b = (int(c) for c in rgb)
+    if g > 110 and g > r + 20 and g > b + 20:
+        return "special"  # green refresh peg
+    if r > 150 and g > 90 and b < 110 and r > b + 40:
+        return "crit"  # orange/gold peg
+    return "normal"
+
+
+def detect_pegs(frame, board=DEFAULT_BOARD):
+    """Return detected pegs as ``[(x, y, kind), ...]`` in frame-pixel coordinates.
+
+    ``kind`` is one of ``"normal"``, ``"special"`` (green), ``"crit"`` (orange).
+    """
     top, left, bottom, right = board_box(frame.shape, board)
 
     region = frame[top:bottom, left:right]
-    if region.size == 0:
+    if region.size == 0 or region.ndim != 3:
         return []
 
-    grayscale = skimage.color.rgb2gray(region) if region.ndim == 3 else region
+    mask = region.max(axis=2) > BRIGHTNESS_THRESHOLD
+    labels = skimage.measure.label(mask)
 
-    blobs = skimage.feature.blob_log(
-        grayscale,
-        min_sigma=min_sigma,
-        max_sigma=max_sigma,
-        num_sigma=5,
-        threshold=threshold,
-    )
+    pegs = []
+    for region_props in skimage.measure.regionprops(labels):
+        if not (MIN_PEG_AREA <= region_props.area <= MAX_PEG_AREA):
+            continue
+        if region_props.eccentricity > 0.85:  # drop elongated arc fragments
+            continue
 
-    # blob_log rows are (y, x, sigma); shift back into full-frame coordinates.
-    return [(int(x) + left, int(y) + top) for y, x, _ in blobs]
+        row, col = region_props.centroid
+        x, y = int(col) + left, int(row) + top
+        pegs.append((x, y, _classify(frame[y, x])))
+
+    return pegs
 
 
 def peg_count(frame, **kwargs):
