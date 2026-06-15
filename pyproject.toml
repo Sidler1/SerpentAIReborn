@@ -92,7 +92,7 @@ line-length = 100
 target-version = "py313"
 # Legacy 2020 modules are linted as they are modernized, phase by phase. This
 # exclude list shrinks each phase; today only freshly-touched files are gated.
-extend-exclude = ["serpent", "cli.py", "dashboard"]
+extend-exclude = ["serpent", "cli.py", "dashboard", "plugins"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "C4"]

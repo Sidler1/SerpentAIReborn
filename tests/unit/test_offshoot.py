@@ -1,6 +1,7 @@
 """Tests for the vendored offshoot plugin framework (contract + discovery)."""
 
 import json
+import sys
 
 import offshoot
 from serpent.game import Game
@@ -109,6 +110,11 @@ def test_discover_imports_pluggable_classes(tmp_path, monkeypatch):
 
     monkeypatch.chdir(tmp_path)
     monkeypatch.syspath_prepend(str(tmp_path))
+
+    # The repo bundles a real top-level `plugins` package; drop any cached copy so
+    # the prepended tmp_path one resolves here.
+    for name in [m for m in sys.modules if m == "plugins" or m.startswith("plugins.")]:
+        monkeypatch.delitem(sys.modules, name, raising=False)
 
     mapping = offshoot.discover("Game")
 
