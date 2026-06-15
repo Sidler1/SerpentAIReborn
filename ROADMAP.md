@@ -88,8 +88,8 @@ New capabilities once the framework is fully restored and solid.
 ### Dashboard 2.0
 - A full SPA: **live frame stream** with agent action/reward overlays, run comparison, multi-run history, optional auth.
 
-### Vision/LLM-assisted agents
-- Optional pretrained detectors (ONNX / torchvision) and **vision-language models** for game-state understanding without hand-authored sprites/OCR.
+### Optional pretrained vision helpers (local only)
+- An **opt-in** helper that runs a user-supplied object detector locally (e.g. a torchvision/ONNX model the user trained or downloaded) to find on-screen elements, as an alternative to hand-authored sprite templates. Strictly local inference on the existing torch stack — **no external/cloud services, no API costs, no new heavy runtime dependency** (ONNX Runtime would be an optional extra only). Hand-authored sprites/OCR remain the default; this is purely a convenience for users who already have a model.
 
 ### Cross-platform parity & DX
 - Full **macOS (MPS)** capture/input/window backends; Wayland parity across GNOME/KDE/wlroots; headless/containerized capture for CI.
