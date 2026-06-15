@@ -55,6 +55,9 @@ dependencies = [
     # Reinforcement learning (Rainbow DQN / PPO). The Linux/Windows PyPI wheels
     # bundle CUDA; device is auto-detected at runtime (cuda/rocm/mps/cpu).
     "torch>=2.5",
+    # Dashboard + visual debugger (local web apps; replaced the dead cef/kivy/pony stack)
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
     # Window control (Linux X11; Wayland backend added in a later phase)
     "python-xlib>=0.33 ; sys_platform == 'linux'",
     "pywin32>=306 ; sys_platform == 'win32'",
@@ -71,6 +74,7 @@ serpent = "cli:cli"
 dev = [
     "ruff>=0.10",
     "pytest>=8.0",
+    "httpx>=0.27",  # FastAPI TestClient
 ]
 
 [build-system]

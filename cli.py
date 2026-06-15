@@ -8,16 +8,14 @@ import shutil
 import subprocess
 
 # Some imports are inline in CLI commands to keep initialization times low
-
 import click
 
 from serpent.utilities import (
     clear_terminal,
     display_serpent_logo,
-    is_windows,
     is_linux,
+    is_windows,
 )
-
 
 # On Windows, disable the Fortran CTRL-C handler that gets installed with SciPy
 if is_windows:
@@ -103,6 +101,26 @@ def gui():
     pass
 
 
+@click.command(help="Launch the Serpent.AI dashboard (local web app)")
+@click.option("--host", default="127.0.0.1", show_default=True)
+@click.option("--port", default=8500, show_default=True)
+@click.option("--project-key", default=None, help="Analytics project/topic to display")
+def dashboard(host, port, project_key):
+    from serpent.dashboard.app import run
+
+    run(host=host, port=port, project_key=project_key)
+
+
+@click.command(name="visual-debugger", help="Launch the visual debugger (local web app)")
+@click.option("--host", default="127.0.0.1", show_default=True)
+@click.option("--port", default=8501, show_default=True)
+@click.argument("buckets", nargs=-1)
+def visual_debugger(host, port, buckets):
+    from serpent.visual_debugger.server import run
+
+    run(host=host, port=port, buckets=list(buckets) or None)
+
+
 @click.command(help="Download additional tools and modules")
 @click.argument("module")
 def download(module):
@@ -114,7 +132,7 @@ def download(module):
 
     if module == "tesseract":
         if is_windows():
-            print(f"Downloading module 'tesseract' to tools directory...")
+            print("Downloading module 'tesseract' to tools directory...")
             _download_module(
                 "https://github.com/SerpentAI/SerpentAI/releases/download/optional/tesseract_4.00.00a_win_amd64.zip",
                 pathlib.Path("tools/tesseract.zip"),
@@ -217,9 +235,7 @@ def sdk_setup():
         print("")
 
         if is_windows():
-            print(
-                "For an easy installation of Tesseract, run 'serpent download tesseract"
-            )
+            print("For an easy installation of Tesseract, run 'serpent download tesseract")
 
     # Has setup already been performed?
     if pathlib.Path(".serpent-sdk").is_file():
@@ -409,6 +425,8 @@ def cli(context, version, help):
 cli.add_command(setup)
 cli.add_command(update)
 cli.add_command(gui)
+cli.add_command(dashboard)
+cli.add_command(visual_debugger)
 cli.add_command(download)
 cli.add_command(show_plugins)
 cli.add_command(plugins)

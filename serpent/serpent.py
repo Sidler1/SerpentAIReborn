@@ -176,77 +176,20 @@ def setup_ocr():
 
 
 def setup_gui():
-    if is_linux():
-        print("Before continuing with the GUI module setup, please read and perform the installation steps from the wiki: https://github.com/SerpentAI/SerpentAI/wiki/Linux-Installation-Guide#gui")
-    elif is_windows():
-        print("Before continuing with the GUI module setup, please read and perform the installation steps from the wiki: https://github.com/SerpentAI/SerpentAI/wiki/Windows-Installation-Guide#gui")
-
-    print("")
-    input("Press Enter to continue...")
-
-    if is_linux():
-        subprocess.call(shlex.split("pip install Kivy==1.10.0"))
-    elif is_windows():
-        subprocess.call(shlex.split("pip install docutils pygments pypiwin32 kivy.deps.sdl2 kivy.deps.glew"))
-        subprocess.call(shlex.split("pip install Kivy==1.10.0"))
-
-    print("")
-    print("GUI module setup complete!")
+    # The visual debugger is now a built-in FastAPI web app (no Kivy/CEF install).
+    print("The visual debugger is now a built-in web app — no separate GUI setup is needed.")
+    print("Run it with: serpent visual-debugger")
 
 
 def setup_ml():
-    if is_linux():
-        print("Before continuing with the ML module setup, please read and perform the installation steps from the wiki: https://github.com/SerpentAI/SerpentAI/wiki/Linux-Installation-Guide#ml")
-    elif is_windows():
-        print("Before continuing with the ML module setup, please read and perform the installation steps from the wiki: https://github.com/SerpentAI/SerpentAI/wiki/Windows-Installation-Guide#ml")
-
-    print("")
-    input("Press Enter to continue...")
-
-    # Decide on CPU or GPU Tensorflow
-    tensorflow_backend = input("\nWhich backend do you plan to use for Tensorflow (One of: 'CPU', 'GPU' - Note: GPU backend can only be used on NVIDIA GTX 600 series and up): \n")
-
-    if tensorflow_backend not in ["CPU", "GPU"]:
-        tensorflow_backend = "CPU"
-
-    if tensorflow_backend == "GPU":
-        subprocess.call(shlex.split("pip install tensorflow-gpu==1.5.1"))
-    elif tensorflow_backend == "CPU":
-        subprocess.call(shlex.split("pip install tensorflow==1.5.1"))
-
-    subprocess.call(shlex.split("pip install Keras tensorforce==0.3.5.1"))
-
-    print("")
-    print("ML module setup complete!")
+    # PyTorch (device auto-detected) is a core dependency now; TensorFlow was dropped.
+    print("PyTorch is bundled as a core dependency (device auto-detected) — no separate ML setup.")
 
 
 def setup_dashboard():
-    if is_linux():
-        print("Before continuing with the Dashboard module setup, please read and perform the installation steps from the wiki: https://github.com/SerpentAI/SerpentAI/wiki/Linux-Installation-Guide#dashboard")
-    elif is_windows():
-        print("Before continuing with the Dashboard module setup, please read and perform the installation steps from the wiki: https://github.com/SerpentAI/SerpentAI/wiki/Windows-Installation-Guide#dashboard")
-
-    print("")
-    input("Press Enter to continue...")
-
-    # Copy the base dashboard directory to the install location
-    shutil.copytree(
-        os.path.join(os.path.dirname(os.path.dirname(__file__)), "dashboard"),
-        os.path.join(os.getcwd(), "dashboard")
-    )
-
-    # Install Kivy
-    if is_linux():
-        subprocess.call(shlex.split("pip install Kivy==1.10.0"))
-    elif is_windows():
-        subprocess.call(shlex.split("pip install docutils pygments pypiwin32 kivy.deps.sdl2 kivy.deps.glew"))
-        subprocess.call(shlex.split("pip install Kivy==1.10.0"))
-
-    # Install CEFPython
-    subprocess.call(shlex.split("pip install cefpython3==57.1"))
-
-    # Install Pony ORM
-    subprocess.call(shlex.split("pip install pony==0.7.3"))
+    # The dashboard is now a built-in FastAPI web app (no CEF/Kivy/Pony install).
+    print("The dashboard is now a built-in web app — no separate dashboard setup is needed.")
+    print("Run it with: serpent dashboard")
 
 
 # TODO: Bring this up to date for dev branch
@@ -427,8 +370,8 @@ def capture(capture_type, game_name, interval=1, extra=None, extra_2=None):
 
 
 def visual_debugger(*buckets):
-    from serpent.visual_debugger.visual_debugger_app import VisualDebuggerApp
-    VisualDebuggerApp(buckets=buckets or None).run()
+    from serpent.visual_debugger.server import run
+    run(buckets=list(buckets) or None)
 
 
 def window_name():
@@ -455,13 +398,9 @@ def record_inputs():
     input_recorder.start()
 
 
-def dashboard(width=None, height=None):
-    if width is not None and height is not None:
-        width = int(width)
-        height = int(height)
-
-    from serpent.dashboard.dashboard_app import DashboardApp
-    DashboardApp(width=width, height=height).run()
+def dashboard(project_key=None):
+    from serpent.dashboard.app import run
+    run(project_key=project_key)
 
 
 def object_recognition(game_agent_name, model_name):
