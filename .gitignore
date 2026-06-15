@@ -14,6 +14,10 @@ __pycache__/
 plugins/
 tools
 
+# offshoot writes an empty manifest into the CWD during discovery;
+# the real manifest lives at serpent/offshoot.manifest.json
+/offshoot.manifest.json
+
 *.egg-info
 
 build/

@@ -124,7 +124,7 @@ class FrameGrabber:
                 frame_array = frame_bytes
             else:
                 frame_shape = [int(i) for i in shape.decode("utf-8").split(", ")]
-                frame_array = np.fromstring(frame_bytes, dtype=dtype.decode("utf-8")).reshape(frame_shape)
+                frame_array = np.frombuffer(frame_bytes, dtype=dtype.decode("utf-8")).reshape(frame_shape)
 
             game_frame = GameFrame(frame_array, timestamp=float(timestamp))
 
@@ -157,7 +157,7 @@ class FrameGrabber:
                     frame_array = frame_bytes
                 else:
                     frame_shape = [int(i) for i in shape.decode("utf-8").split(", ")]
-                    frame_array = np.fromstring(frame_bytes, dtype=dtype.decode("utf-8")).reshape(frame_shape)
+                    frame_array = np.frombuffer(frame_bytes, dtype=dtype.decode("utf-8")).reshape(frame_shape)
 
                 game_frame = GameFrame(frame_array, timestamp=float(timestamp))
 

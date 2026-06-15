@@ -1,5 +1,5 @@
 from redis import StrictRedis
-from datetime import datetime
+from datetime import datetime, timezone
 from pprint import pprint
 
 from serpent.config import config
@@ -35,7 +35,7 @@ class AnalyticsClient:
                 "project_key": self.project_key,
                 "event_key": event_key,
                 "data": data,
-                "timestamp": timestamp if timestamp is not None else datetime.utcnow().isoformat(),
+                "timestamp": timestamp if timestamp is not None else datetime.now(timezone.utc).isoformat(),
                 "is_persistable": is_persistable
             }
 

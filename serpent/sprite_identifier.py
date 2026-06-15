@@ -1,4 +1,4 @@
-import skimage.measure
+import skimage.metrics
 
 
 class SpriteIdentifier:
@@ -71,7 +71,7 @@ class SpriteIdentifier:
                         sprite_image = sprite.image_data[..., :3, i]
                         query_sprite_image = query_sprite.image_data[..., :3, ii]
 
-                        ssim_score = int(skimage.measure.compare_ssim(query_sprite_image, sprite_image, multichannel=True) * 100)
+                        ssim_score = int(skimage.metrics.structural_similarity(query_sprite_image, sprite_image, channel_axis=-1, data_range=255) * 100)
 
                         if debug:
                             print(sprite_name, ssim_score)

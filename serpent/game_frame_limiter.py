@@ -1,7 +1,5 @@
 import time
 
-from datetime import datetime
-
 
 class GameFrameLimiter:
 
@@ -10,10 +8,12 @@ class GameFrameLimiter:
         self.started_at = None
 
     def start(self):
-        self.started_at = datetime.utcnow()
+        self.started_at = time.perf_counter()
 
     def stop_and_delay(self):
-        duration = (datetime.utcnow() - self.started_at).microseconds / 1000000
+        # Monotonic clock; full elapsed seconds (the old timedelta.microseconds
+        # silently dropped any whole seconds of frame time).
+        duration = time.perf_counter() - self.started_at
         remaining_frame_time = self.frame_time - duration
 
         if remaining_frame_time > 0:
