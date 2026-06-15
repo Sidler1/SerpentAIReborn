@@ -19,7 +19,7 @@ from .helpers import strategy, vision
 FIRE_COOLDOWN_FRAMES = 30
 
 
-class PeglinGameAgent(GameAgent):
+class SerpentPeglinGameAgent(GameAgent):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 

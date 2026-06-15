@@ -4,7 +4,7 @@ from serpent.utilities import Singleton
 from .api.api import PeglinAPI
 
 
-class PeglinGame(Game, metaclass=Singleton):
+class SerpentPeglinGame(Game, metaclass=Singleton):
     """Peglin (Steam app 1296610) — a pachinko/peggle roguelike.
 
     Combat is mouse-aimed: move the cursor to aim the orb's launch trajectory and

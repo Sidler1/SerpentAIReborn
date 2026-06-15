@@ -57,13 +57,13 @@ PLUGINS = [
     (
         "plugins/PeglinGamePlugin/files/peglin_game.py",
         "Game",
-        "PeglinGame",
+        "SerpentPeglinGame",
         "plugins.PeglinGamePlugin.files.peglin_game",
     ),
     (
         "plugins/PeglinGameAgentPlugin/files/peglin_game_agent.py",
         "GameAgent",
-        "PeglinGameAgent",
+        "SerpentPeglinGameAgent",
         "plugins.PeglinGameAgentPlugin.files.peglin_game_agent",
     ),
 ]
