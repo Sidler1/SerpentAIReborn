@@ -40,7 +40,7 @@ def is_x11_available():
     The current Linux capture/input/window backends speak X11, so on a Wayland
     session they require XWayland (which exposes ``$DISPLAY``). Native-Wayland
     backends (PipeWire capture, ydotool input, KWin window control) are a planned
-    addition; see MODERNIZATION.md Phase F.
+    addition; see ROADMAP.md.
     """
     return bool(os.environ.get("DISPLAY"))
 

@@ -21,7 +21,7 @@ from serpent.utilities import (
 if is_windows:
     os.environ["FOR_DISABLE_CONSOLE_CTRL_HANDLER"] = "T"
 
-VERSION = "2020.2.1"
+VERSION = "0.1.0"
 
 
 @click.command(help="Perform Serpent.AI setup")

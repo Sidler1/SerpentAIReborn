@@ -11,7 +11,7 @@ try:
 except ImportError:
     raise SerpentError(
         "The TensorFlow/Keras context classifiers were removed in the PyTorch migration. "
-        "A torchvision-based replacement is planned — see MODERNIZATION.md Phase G."
+        "A torchvision-based replacement is planned — see ROADMAP.md."
     )
 
 import skimage.transform

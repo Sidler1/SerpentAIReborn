@@ -1,6 +1,6 @@
 [project]
 name = "serpent"
-version = "2026.0.0.dev0"
+version = "0.1.0"
 description = "Game Agent Development Kit — create AIs / bots that learn to play any game you own."
 readme = "README.md"
 requires-python = ">=3.13"

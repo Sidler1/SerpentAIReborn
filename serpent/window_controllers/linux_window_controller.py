@@ -9,7 +9,7 @@ class LinuxWindowController(WindowController):
 
     Works for native-X11 windows and, on a Wayland session, for XWayland windows
     (which is how Steam/Proton games typically run). Native-Wayland window control
-    (KWin/kdotool) is a planned addition — see MODERNIZATION.md Phase F.
+    (KWin/kdotool) is a planned addition — see ROADMAP.md.
     """
 
     def __init__(self):

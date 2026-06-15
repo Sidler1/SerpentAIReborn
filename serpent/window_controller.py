@@ -46,7 +46,7 @@ class WindowController:
                 raise WindowControllerError(
                     "Running under Wayland with no XWayland ($DISPLAY unset). The current "
                     "window/input/capture backends require X11/XWayland. Start the game as an "
-                    "XWayland window, or wait for the native-Wayland backends (MODERNIZATION.md "
+                    "XWayland window, or wait for the native-Wayland backends (ROADMAP.md "
                     "Phase F)."
                 )
 

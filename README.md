@@ -11,10 +11,10 @@ mouse input back into the game. It's plugin-based (separate plugins for game sup
 and for game agents) so experiments are portable.
 
 **Reborn** is a 2026 modernization of the original [SerpentAI](https://github.com/SerpentAI/SerpentAI)
-framework (last released 2020.2.1, Python 3.8): now Python 3.13+, [uv](https://github.com/astral-sh/uv),
-PyTorch 2.x, a pluggable transport, Wayland-aware, and free of the dead 2020
-dependency stack. See [`MODERNIZATION.md`](MODERNIZATION.md) for the full
-journey and [`CLAUDE.md`](CLAUDE.md) for an architecture orientation.
+framework (last released 2020.2.1, Python 3.8): now **v0.1.0** on Python 3.13+,
+[uv](https://github.com/astral-sh/uv), PyTorch 2.x, a pluggable transport, Wayland-aware,
+and free of the dead 2020 dependency stack. See [`ROADMAP.md`](ROADMAP.md) for what's
+planned next and [`CLAUDE.md`](CLAUDE.md) for an architecture orientation.
 
 > Core tenets (unchanged from the original): **(1)** run natively — no Docker or VNC;
 > **(2)** bring your own games — no licensing deals or special APIs; **(3)** encourage

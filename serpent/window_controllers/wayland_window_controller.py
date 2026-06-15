@@ -9,7 +9,7 @@ Until that lands, Serpent drives **XWayland** windows through
 :class:`~serpent.window_controllers.linux_window_controller.LinuxWindowController`
 (xdotool), which covers the common case of Steam/Proton games. This class exists
 to mark the extension point and keep the dispatch contract explicit; see
-MODERNIZATION.md Phase F.
+ROADMAP.md.
 """
 
 from serpent.window_controller import WindowController, WindowControllerError
@@ -17,7 +17,7 @@ from serpent.window_controller import WindowController, WindowControllerError
 _NOT_IMPLEMENTED = (
     "Native-Wayland window control is not implemented yet. Run the game as an "
     "XWayland window (LinuxWindowController), or contribute a KWin/kdotool backend "
-    "(MODERNIZATION.md Phase F)."
+    "(ROADMAP.md)."
 )
 
 
