@@ -27,8 +27,12 @@ The dead 2020 stack is gone (TensorFlow, crossbar/autobahn/twisted, cefpython3, 
 Finish the work that 0.1.0 deliberately deferred or scaffolded. These are
 *planned and tracked but not yet implemented in the code*.
 
-_Done so far: context classifiers re-homed onto PyTorch/torchvision (replacing
-the dead TensorFlow Inception/Xception)._
+**Done so far** (landed toward 0.2.0):
+- Context classifiers re-homed onto PyTorch/torchvision (replacing the dead TensorFlow Inception/Xception).
+- CLI completed: `games`/`game-agents`/`rl-agents`/`show-plugins`/`game-instructions`/`download-plugin` implemented.
+- Dashboard live updates over **WebSocket** (with polling fallback).
+- **PyPI release workflow** (tag-triggered, Trusted Publishing).
+- Modernized `serpent/` modules now **gated by ruff in CI**.
 
 ### Native Wayland backends
 Today capture/input/window only work via **XWayland**; `serpent/window_controllers/wayland_window_controller.py` is a stub.
@@ -41,10 +45,8 @@ Isaac and YMBAB are modern-API scaffolds with no-op `PLAY` handlers. Port their 
 - **Isaac:** minimap/room/floor parsing + navigation + the RL policy.
 - **YMBAB:** board parsing, tile sprite identification, OCR, match scoring.
 
-### Finish the CLI
-Several `cli.py` commands are still `# TODO: Implement`:
-- `games`, `game-agents`, `rl-agents`, `game-instructions`, `show-plugins`, `download-plugin`.
-- End-to-end **plugin lifecycle**: `generate` → `activate`/`deactivate` → `install` from a path/URL, with an offshoot manifest written automatically (so `serpent play <Game> <Agent>` works without manual setup).
+### Plugin lifecycle, end-to-end
+The CLI commands exist, but the full flow needs a real run: `generate` → `activate` (writes the offshoot manifest) → `serpent play <Game> <Agent>` working without manual manifest editing. Verify and smooth the rough edges.
 
 ### Windows support, validated
 Exercise the win32 capture/input/window controllers on real hardware; add a `dxcam` capture path; add **Windows to the CI matrix**.
@@ -52,16 +54,11 @@ Exercise the win32 capture/input/window controllers on real hardware; add a `dxc
 ### End-to-end verification
 A documented smoke-test harness that runs **capture + input + play** against a real game (Super Hexagon) and a short **GPU training** run; plus capture/transport timing benchmarks. (Untestable in the dev sandbox today.)
 
-### Dashboard live updates
-Replace the dashboard's polling with **websockets/SSE** push; reconnect handling; richer per-event/metric views and a frame-rate readout.
-
-### Quality gates
-- Progressively bring `serpent/` into **ruff** scope (currently excluded) and add **mypy** + type hints to the core.
+### Quality gates (continued)
+- Bring the **rest of `serpent/`** into ruff scope (the modernized modules are already gated) and add **mypy** + type hints to the core.
 - Broaden tests: frame transformation pipeline, input controller, `GameAPI.combine_game_inputs`, cv/ocr, sprite identification.
 - Resolve the remaining in-code `# TODO`s (GameFrame fraction-resolution refactor, sprite-locator speedups, analytics tagging).
-
-### Packaging
-Build + publish to **PyPI**; commit `uv.lock` reproducibility; optional `[ml]` / `[dashboard]` extras to slim the base install; a release GitHub Action.
+- Optional `[ml]` / `[dashboard]` install extras to slim the base install.
 
 ---
 
