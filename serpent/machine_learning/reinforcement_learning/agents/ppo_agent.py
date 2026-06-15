@@ -2,8 +2,6 @@ from serpent.machine_learning.reinforcement_learning.agent import Agent
 
 from serpent.machine_learning.device import get_device
 
-from serpent.game_frame import GameFrame
-from serpent.game_frame_buffer import GameFrameBuffer
 
 from serpent.enums import InputControlTypes
 
