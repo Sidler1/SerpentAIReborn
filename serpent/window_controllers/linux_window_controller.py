@@ -16,7 +16,18 @@ class LinuxWindowController(WindowController):
         pass
 
     def locate_window(self, name):
-        return subprocess.check_output(shlex.split(f"xdotool search --onlyvisible --name \"^{name}$\"")).decode("utf-8").strip()
+        # xdotool exits non-zero when nothing matches; return the "not found"
+        # sentinel "0" (callers treat 0/"0" as missing) instead of raising, and
+        # return only the first match if several windows share the title.
+        try:
+            output = subprocess.check_output(
+                shlex.split(f'xdotool search --onlyvisible --name "^{name}$"'),
+                stderr=subprocess.DEVNULL,
+            ).decode("utf-8").strip()
+        except subprocess.CalledProcessError:
+            return "0"
+
+        return output.split("\n")[0].strip() or "0"
 
     def move_window(self, window_id, x, y):
         subprocess.call(shlex.split(f"xdotool windowmove {window_id} {x} {y}"))

@@ -1,5 +1,7 @@
 """Phase F: XWayland-first window controller + display detection."""
 
+import shutil
+
 import pytest
 
 from serpent import utilities
@@ -56,6 +58,14 @@ def test_dispatch_uses_xwayland_backend_with_warning(monkeypatch):
         controller = WindowController()
 
     assert isinstance(controller.adapter, LinuxWindowController)
+
+
+@pytest.mark.skipif(shutil.which("xdotool") is None, reason="needs xdotool")
+def test_locate_window_returns_sentinel_when_not_found():
+    # No window has this title -> must return "0", not raise (regression: the
+    # optional dashboard lookup in Game.after_launch crashed otherwise).
+    controller = LinuxWindowController()
+    assert controller.locate_window("No Such Window 9f3a2b7c") == "0"
 
 
 def test_native_wayland_controller_is_a_documented_stub():
