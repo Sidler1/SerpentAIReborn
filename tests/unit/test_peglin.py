@@ -23,7 +23,7 @@ def _frame_with_pegs(centers, shape=(720, 1280, 3), radius=7, color=(255, 255, 2
 
 
 def test_detect_pegs_finds_drawn_pegs():
-    from plugins.PeglinGameAgentPlugin.files.helpers import vision
+    from plugins.SerpentPeglinGameAgentPlugin.files.helpers import vision
 
     centers = [(500, 280), (560, 300), (620, 280), (800, 460)]
     pegs = vision.detect_pegs(_frame_with_pegs(centers))
@@ -37,7 +37,7 @@ def test_detect_pegs_finds_drawn_pegs():
 
 
 def test_detect_pegs_classifies_green_as_special():
-    from plugins.PeglinGameAgentPlugin.files.helpers import vision
+    from plugins.SerpentPeglinGameAgentPlugin.files.helpers import vision
 
     frame = _frame_with_pegs([(560, 300)], color=(60, 200, 80))
     pegs = vision.detect_pegs(frame)
@@ -46,13 +46,13 @@ def test_detect_pegs_classifies_green_as_special():
 
 
 def test_detect_pegs_empty_on_blank_frame():
-    from plugins.PeglinGameAgentPlugin.files.helpers import vision
+    from plugins.SerpentPeglinGameAgentPlugin.files.helpers import vision
 
     assert vision.detect_pegs(np.zeros((720, 1280, 3), dtype="uint8")) == []
 
 
 def test_choose_aim_targets_densest_band():
-    from plugins.PeglinGameAgentPlugin.files.helpers import strategy
+    from plugins.SerpentPeglinGameAgentPlugin.files.helpers import strategy
 
     pegs = [(490, 300, "normal"), (500, 320, "normal"), (510, 300, "normal"), (900, 500, "normal")]
     aim_x, aim_y = strategy.choose_aim(pegs, (720, 1280, 3))
@@ -62,7 +62,7 @@ def test_choose_aim_targets_densest_band():
 
 
 def test_choose_aim_prioritizes_special_pegs():
-    from plugins.PeglinGameAgentPlugin.files.helpers import strategy
+    from plugins.SerpentPeglinGameAgentPlugin.files.helpers import strategy
 
     # Many normal pegs on the left, a single special peg far right -> aim right.
     pegs = [(450, 300, "normal"), (460, 320, "normal"), (470, 300, "normal"), (900, 480, "special")]
@@ -72,10 +72,34 @@ def test_choose_aim_prioritizes_special_pegs():
 
 
 def test_choose_aim_without_pegs_returns_board_center():
-    from plugins.PeglinGameAgentPlugin.files.helpers import strategy, vision
+    from plugins.SerpentPeglinGameAgentPlugin.files.helpers import strategy, vision
 
     aim_x, aim_y = strategy.choose_aim([], (720, 1280, 3))
     top, left, bottom, right = vision.board_box((720, 1280, 3))
 
     assert left < aim_x < right
     assert top <= aim_y <= bottom
+
+
+def test_find_continue_button_detects_green_button():
+    from plugins.SerpentPeglinGameAgentPlugin.files.helpers import navigation
+
+    frame = np.zeros((720, 1280, 3), dtype="uint8")
+    # large muted-green button in the lower-centre
+    frame[600:650, 575:705] = (81, 113, 50)
+
+    button = navigation.find_continue_button(frame)
+    assert button is not None
+    x, y = button
+    assert 575 <= x <= 705
+    assert 600 <= y <= 650
+
+
+def test_find_continue_button_ignores_small_green_pegs():
+    from plugins.SerpentPeglinGameAgentPlugin.files.helpers import navigation
+
+    frame = np.zeros((720, 1280, 3), dtype="uint8")
+    # a small green peg-sized blob is not a button
+    frame[300:312, 560:572] = (60, 200, 80)
+
+    assert navigation.find_continue_button(frame) is None
