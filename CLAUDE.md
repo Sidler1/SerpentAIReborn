@@ -33,7 +33,7 @@ Most runtime commands assume the **repo root is the working directory** (see con
 
 ## Architecture
 
-Built on **offshoot**, a tiny plugin framework: `serpent/game.py::Game` and `serpent/game_agent.py::GameAgent` are `offshoot.Pluggable` subclasses; plugins subclass them. Methods are annotated with `@offshoot.expected` (a plugin must implement) and `@offshoot.forbidden` (must not override); discovery/validation is `offshoot.discover(...)` against `offshoot.manifest.json`. (offshoot is being vendored + modernized — see roadmap Phase C.)
+Built on **offshoot**, a tiny plugin framework **vendored into the repo at `./offshoot`** (no longer a pip dependency; still imported as `import offshoot`). `serpent/game.py::Game` and `serpent/game_agent.py::GameAgent` are `offshoot.Pluggable` subclasses; plugins subclass them. Methods are annotated with `@offshoot.expected` (a plugin must implement) and `@offshoot.forbidden` (must not override); these markers are detected by source inspection (`Pluggable.method_directives`). Discovery is `offshoot.discover(pluggable, scope=None, selection=None)` against `offshoot.manifest.json` (importlib-based). Dev config lives in the root `offshoot.yml` (`modules: [serpent.game, serpent.game_agent]`).
 
 ### The frame pipeline (core loop)
 1. `Game.launch()` uses a **game launcher** (`serpent/game_launchers/`, e.g. Steam) and a **window controller** to find/focus/size the game window.

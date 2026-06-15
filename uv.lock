@@ -245,15 +245,6 @@ wheels = [
 ]
 
 [[package]]
-name = "offshoot"
-version = "0.1.6"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pyyaml" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/62/53/9da62933a2fecf377eef0d90ab7502964d91d3daf39946e4c6427dd3fc80/offshoot-0.1.6.tar.gz", hash = "sha256:01c693ad4982c8618a29f7b7f438f6150ccad366ecc7b04abc9c72a58158b716", size = 12523, upload-time = "2018-02-03T22:12:25.461Z" }
-
-[[package]]
 name = "packaging"
 version = "26.2"
 source = { registry = "https://pypi.org/simple" }
@@ -786,7 +777,6 @@ dependencies = [
     { name = "levenshtein" },
     { name = "mss" },
     { name = "numpy" },
-    { name = "offshoot" },
     { name = "pillow" },
     { name = "pyautogui" },
     { name = "pyperclip" },
@@ -815,7 +805,6 @@ requires-dist = [
     { name = "levenshtein", specifier = ">=0.26" },
     { name = "mss", specifier = ">=9.0" },
     { name = "numpy", specifier = ">=2.1" },
-    { name = "offshoot", specifier = ">=0.1.6" },
     { name = "pillow", specifier = ">=11.0" },
     { name = "pyautogui", specifier = ">=0.9.54" },
     { name = "pyperclip", specifier = ">=1.9" },
