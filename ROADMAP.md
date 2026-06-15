@@ -27,14 +27,14 @@ The dead 2020 stack is gone (TensorFlow, crossbar/autobahn/twisted, cefpython3, 
 Finish the work that 0.1.0 deliberately deferred or scaffolded. These are
 *planned and tracked but not yet implemented in the code*.
 
+_Done so far: context classifiers re-homed onto PyTorch/torchvision (replacing
+the dead TensorFlow Inception/Xception)._
+
 ### Native Wayland backends
 Today capture/input/window only work via **XWayland**; `serpent/window_controllers/wayland_window_controller.py` is a stub.
 - **Capture:** `xdg-desktop-portal` ScreenCast → PipeWire stream.
 - **Input:** `ydotool`/libei over `uinput` (with the `ydotoold` setup documented).
 - **Window control:** KWin D-Bus / `kdotool` (KDE) and the wlroots foreign-toplevel protocol; wire into the `WindowController` dispatch.
-
-### Re-home the context classifiers onto torchvision
-The TF/Keras Inception-V3 / Xception classifiers currently raise on import. Reimplement on **torchvision** (pretrained backbones + a small head), restoring `serpent train context`.
 
 ### Port the bundled game-agent AI
 Isaac and YMBAB are modern-API scaffolds with no-op `PLAY` handlers. Port their real logic from `master` onto the modern `Agent` / PyTorch:

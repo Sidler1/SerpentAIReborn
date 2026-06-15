@@ -25,3 +25,6 @@ key.priv
 key.pub
 node.pid
 poetry.lock
+
+# Dashboard runtime output (SQLite store; created at runtime by serpent/dashboard/store.py)
+/dashboard/

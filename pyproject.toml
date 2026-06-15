@@ -52,9 +52,10 @@ dependencies = [
     "Levenshtein>=0.26",
     # Data bus (sync + asyncio live in the same package since redis-py 4.2)
     "redis>=5.0",
-    # Reinforcement learning (Rainbow DQN / PPO). The Linux/Windows PyPI wheels
-    # bundle CUDA; device is auto-detected at runtime (cuda/rocm/mps/cpu).
+    # Reinforcement learning (Rainbow DQN / PPO) + context classification. The
+    # Linux/Windows PyPI wheels bundle CUDA; device is auto-detected at runtime.
     "torch>=2.5",
+    "torchvision>=0.20",
     # Dashboard + visual debugger (local web apps; replaced the dead cef/kivy/pony stack)
     "fastapi>=0.115",
     "uvicorn>=0.30",
