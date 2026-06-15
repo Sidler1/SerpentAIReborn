@@ -54,6 +54,18 @@ PLUGINS = [
         "YouMustBuildABoatGameAgent",
         "plugins.YouMustBuildABoatGameAgentPlugin.files.you_must_build_a_boat_game_agent",
     ),
+    (
+        "plugins/PeglinGamePlugin/files/peglin_game.py",
+        "Game",
+        "PeglinGame",
+        "plugins.PeglinGamePlugin.files.peglin_game",
+    ),
+    (
+        "plugins/PeglinGameAgentPlugin/files/peglin_game_agent.py",
+        "GameAgent",
+        "PeglinGameAgent",
+        "plugins.PeglinGameAgentPlugin.files.peglin_game_agent",
+    ),
 ]
 
 _BASE = {"Game": Game, "GameAgent": GameAgent}
