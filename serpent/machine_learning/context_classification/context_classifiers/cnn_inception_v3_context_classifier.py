@@ -9,7 +9,10 @@ try:
     from keras.models import Model, load_model
     from keras.callbacks import ModelCheckpoint
 except ImportError:
-    raise SerpentError("Setup has not been been performed for the ML module. Please run 'serpent setup ml'")
+    raise SerpentError(
+        "The TensorFlow/Keras context classifiers were removed in the PyTorch migration. "
+        "A torchvision-based replacement is planned — see MODERNIZATION.md Phase G."
+    )
 
 import skimage.transform
 

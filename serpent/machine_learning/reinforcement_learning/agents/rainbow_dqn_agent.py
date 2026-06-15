@@ -1,5 +1,7 @@
 from serpent.machine_learning.reinforcement_learning.agent import Agent
 
+from serpent.machine_learning.device import get_device
+
 from serpent.game_frame import GameFrame
 from serpent.game_frame_buffer import GameFrameBuffer
 
@@ -66,15 +68,14 @@ class RainbowDQNAgent(Agent):
         if game_inputs[0]["control_type"] != InputControlTypes.DISCRETE:
             raise SerpentError("RainbowDQNAgent only supports discrete input spaces")
 
-        if torch.cuda.is_available():
-            self.device = torch.device("cuda")
+        self.device = get_device()
 
-            torch.set_default_tensor_type("torch.cuda.FloatTensor")
+        if self.device.type == "cuda":
+            torch.set_default_device(self.device)
             torch.backends.cudnn.enabled = False
 
             torch.cuda.manual_seed_all(seed)
         else:
-            self.device = torch.device("cpu")
             torch.set_num_threads(1)
 
         torch.manual_seed(seed)

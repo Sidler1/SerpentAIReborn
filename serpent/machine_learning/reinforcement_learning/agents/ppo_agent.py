@@ -1,5 +1,7 @@
 from serpent.machine_learning.reinforcement_learning.agent import Agent
 
+from serpent.machine_learning.device import get_device
+
 from serpent.game_frame import GameFrame
 from serpent.game_frame_buffer import GameFrameBuffer
 
@@ -60,15 +62,14 @@ class PPOAgent(Agent):
         if game_inputs[0]["control_type"] != InputControlTypes.DISCRETE:
             raise SerpentError("PPOAgent only supports discrete input spaces")
 
-        if torch.cuda.is_available():
-            self.device = torch.device("cuda")
+        self.device = get_device()
 
-            torch.set_default_tensor_type("torch.cuda.FloatTensor")
+        if self.device.type == "cuda":
+            torch.set_default_device(self.device)
             torch.backends.cudnn.benchmark = True
 
             torch.cuda.manual_seed_all(seed)
         else:
-            self.device = torch.device("cpu")
             torch.set_num_threads(1)
 
         torch.manual_seed(seed)
@@ -107,8 +108,7 @@ class PPOAgent(Agent):
 
         self.actor_critic = Policy(input_shape, len(self.game_inputs[0]["inputs"]), agent_kwargs["is_recurrent"])
 
-        if torch.cuda.is_available():
-            self.actor_critic.cuda(device=self.device)
+        self.actor_critic.to(self.device)
 
         self.agent = PPO(
             self.actor_critic,
@@ -130,8 +130,7 @@ class PPOAgent(Agent):
             self.actor_critic.state_size
         )
 
-        if torch.cuda.is_available():
-            self.storage.cuda(device=self.device)
+        self.storage.to(self.device)
 
         self.current_episode = 1
         self.current_step = 0
@@ -255,10 +254,8 @@ class PPOAgent(Agent):
 
 
     def save_model(self):
-        model = self.actor_critic
-        
-        if torch.cuda.is_available():
-            model = copy.deepcopy(self.actor_critic).cpu()
+        # Persist on CPU so checkpoints are portable across devices.
+        model = copy.deepcopy(self.actor_critic).cpu()
 
         torch.save(model, self.model_path)
 
@@ -274,10 +271,9 @@ class PPOAgent(Agent):
         if not os.path.isfile(self.model_path):
             return
 
-        self.actor_critic = torch.load(self.model_path)
-
-        if torch.cuda.is_available():
-            self.actor_critic = self.actor_critic.cuda(device=self.device)
+        # weights_only defaults to True in torch >= 2.6; this is a full pickled module.
+        self.actor_critic = torch.load(self.model_path, weights_only=False)
+        self.actor_critic = self.actor_critic.to(self.device)
 
         file_path = self.model_path.replace(".pth", ".json")
 
