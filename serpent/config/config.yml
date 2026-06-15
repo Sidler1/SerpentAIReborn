@@ -1,5 +1,5 @@
 transport:
-    backend: redis  # redis | in_process
+    backend: in_process  # in_process | redis
 
 redis:
     host: 127.0.0.1

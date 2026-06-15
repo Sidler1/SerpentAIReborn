@@ -29,7 +29,11 @@ class FrameGrabber:
         self.frame_buffer_size = buffer_seconds * fps
 
         self.transport = transport
-        self.screen_grabber = mss.mss()
+
+        # Created lazily in grab_frame() so the mss/X11 connection is opened in the
+        # thread that uses it (the in-process transport runs the grabber in a
+        # thread; an mss instance is not safe to share across threads).
+        self.screen_grabber = None
 
         self.frame_transformation_pipeline = None
 
@@ -84,6 +88,9 @@ class FrameGrabber:
                 time.sleep(frame_time_left)
 
     def grab_frame(self):
+        if self.screen_grabber is None:
+            self.screen_grabber = mss.mss()
+
         frame = np.array(
             self.screen_grabber.grab({
                 "top": self.y_offset,
