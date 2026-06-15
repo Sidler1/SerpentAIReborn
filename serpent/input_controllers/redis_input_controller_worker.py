@@ -1,11 +1,10 @@
+import contextlib
 import pickle
 
-from serpent.transport import get_transport
-
 import offshoot
-
 from serpent.config import config
 from serpent.input_controller import InputController, InputControllers
+from serpent.transport import get_transport
 from serpent.utilities import is_windows
 
 
@@ -36,10 +35,8 @@ class RedisInputControllerWorker:
         backend_string = config["input_controller"]["backend"]
 
         if backend_string != "DEFAULT":
-            try:
+            with contextlib.suppress(KeyError):
                 backend = InputControllers[backend_string]
-            except KeyError:
-                pass
 
         input_controller = InputController(game=game, backend=backend)
 

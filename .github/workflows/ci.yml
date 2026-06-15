@@ -37,5 +37,24 @@ jobs:
       - name: Ruff format check
         run: uv run ruff format --check .
 
+      # Also gate the modernized serpent/ modules (the rest of serpent/ is still
+      # legacy and excluded in pyproject; this list grows as modules are modernized).
+      - name: Ruff lint (modernized modules)
+        run: uv run ruff check ${{ env.MODERN_PATHS }}
+
+      - name: Ruff format check (modernized modules)
+        run: uv run ruff format --check ${{ env.MODERN_PATHS }}
+
       - name: Run tests
         run: uv run pytest
+
+    env:
+      MODERN_PATHS: >-
+        serpent/transport
+        serpent/dashboard
+        serpent/visual_debugger/server.py
+        serpent/visual_debugger/visual_debugger.py
+        serpent/machine_learning/device.py
+        serpent/machine_learning/context_classification/context_classifiers/cnn_context_classifier.py
+        serpent/input_controllers/redis_input_controller_worker.py
+        serpent/window_controllers/wayland_window_controller.py

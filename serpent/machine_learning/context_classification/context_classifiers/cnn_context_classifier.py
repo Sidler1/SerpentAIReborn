@@ -12,7 +12,6 @@ the auto-detected device (CUDA/ROCm/MPS/CPU).
 
 from __future__ import annotations
 
-import numpy as np
 import skimage.transform
 import torch
 from torch import nn
@@ -60,9 +59,7 @@ class CNNContextClassifier(ContextClassifier):
         self.device = get_device()
 
         self.class_names: list[str] | None = None
-        self._transform = transforms.Compose(
-            [transforms.Resize(IMAGE_SIZE), transforms.ToTensor()]
-        )
+        self._transform = transforms.Compose([transforms.Resize(IMAGE_SIZE), transforms.ToTensor()])
 
     def train(self, epochs=3, autosave=False, validate=True, learning_rate=1e-3):
         dataset = ImageFolder(TRAINING_PATH, transform=self._transform)
