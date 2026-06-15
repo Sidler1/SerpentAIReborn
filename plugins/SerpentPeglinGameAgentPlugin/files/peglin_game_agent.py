@@ -59,10 +59,8 @@ class SerpentPeglinGameAgent(GameAgent):
         print(f"Peglin: {len(pegs)} pegs -> aim ({aim_x}, {aim_y})")
 
     def _click(self, frame_x, frame_y):
-        geometry = self.game.window_geometry
-
-        screen_x = geometry["x_offset"] + frame_x
-        screen_y = geometry["y_offset"] + frame_y
-
-        self.input_controller.move(x=screen_x, y=screen_y, duration=0.15)
+        # Pass window-relative (frame) coords: InputController.move() adds the
+        # window offset itself (adding it here too double-counted it — clicks
+        # landed window_geometry["y_offset"] px too low).
+        self.input_controller.move(x=frame_x, y=frame_y, duration=0.15)
         self.input_controller.click(button=MouseButton.LEFT)
