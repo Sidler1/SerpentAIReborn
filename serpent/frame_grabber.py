@@ -97,11 +97,13 @@ class FrameGrabber:
 
     @classmethod
     def get_frames(cls, frame_buffer_indices, frame_type="FULL", **kwargs):
-        while True:
-            if transport.llen(config["frame_grabber"]["redis_key"]) > 149:
-                break
-            
-            time.sleep(0.1)
+        # Wait only until enough frames are buffered to satisfy the requested
+        # indices (was a fixed 150, which assumed ~30 fps mss and stalled for ~100s
+        # with the slower spectacle/Wayland grabber).
+        required = max(frame_buffer_indices) + 1
+
+        while transport.llen(config["frame_grabber"]["redis_key"]) < required:
+            time.sleep(0.05)
 
         game_frame_buffer = GameFrameBuffer(size=len(frame_buffer_indices))
 
@@ -127,11 +129,10 @@ class FrameGrabber:
 
     @classmethod
     def get_frames_with_pipeline(cls, frame_buffer_indices, **kwargs):
-        while True:
-            if transport.llen(config["frame_grabber"]["redis_key"]) > 149:
-                break
+        required = max(frame_buffer_indices) + 1
 
-            time.sleep(0.1)
+        while transport.llen(config["frame_grabber"]["redis_key"]) < required:
+            time.sleep(0.05)
 
         game_frame_buffers = [
             GameFrameBuffer(size=len(frame_buffer_indices)),

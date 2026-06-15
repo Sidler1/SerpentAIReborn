@@ -10,13 +10,16 @@ Calibrate `helpers/vision.DEFAULT_BOARD` (and add a colour mask / HP / turn-cue
 detection) against a real 1280x720 frame for best results.
 """
 
+import time
+
 from serpent.game_agent import GameAgent
 from serpent.input_controller import MouseButton
 
 from .helpers import strategy, vision
 
-# Frames to wait between shots (combat is turn-based; let the orb finish bouncing).
-FIRE_COOLDOWN_FRAMES = 30
+# Seconds to wait between shots (combat is turn-based; let the orb finish bouncing).
+# Time-based so it's independent of the capture frame rate.
+FIRE_COOLDOWN_SECONDS = 4.0
 
 
 class SerpentPeglinGameAgent(GameAgent):
@@ -27,24 +30,23 @@ class SerpentPeglinGameAgent(GameAgent):
         self.frame_handler_setups["PLAY"] = self.setup_play
 
     def setup_play(self):
-        self._frames_since_fire = FIRE_COOLDOWN_FRAMES  # ready to fire on the first turn
+        self._last_fire = 0.0  # ready to fire on the first turn
 
     def handle_play(self, game_frame, game_frame_pipeline, **kwargs):
-        self._frames_since_fire += 1
-
-        if self._frames_since_fire < FIRE_COOLDOWN_FRAMES:
+        if time.perf_counter() - self._last_fire < FIRE_COOLDOWN_SECONDS:
             return
 
         pegs = vision.detect_pegs(game_frame.frame)
 
         if not pegs:
             # Likely mid-bounce or not the player's turn — wait for a peg field.
+            print("Peglin: no pegs detected (waiting)")
             return
 
         aim_x, aim_y = strategy.choose_aim(pegs, game_frame.frame.shape)
         self._fire(aim_x, aim_y)
 
-        self._frames_since_fire = 0
+        self._last_fire = time.perf_counter()
 
         print(f"Peglin: {len(pegs)} pegs -> aim ({aim_x}, {aim_y})")
 
