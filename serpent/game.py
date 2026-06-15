@@ -63,7 +63,6 @@ class Game(offshoot.Pluggable):
         self.frame_grabber_process = None
         self.frame_transformation_pipeline_string = None
 
-        self.crossbar_process = None
         self.input_controller_process = None
 
         self.game_frame_limiter = GameFrameLimiter(fps=self.config.get("fps", 30))
@@ -196,9 +195,6 @@ class Game(offshoot.Pluggable):
         if not self.is_launched:
             raise GameError(f"Game '{self.__class__.__name__}' is not running...")
 
-        self.start_crossbar()
-        time.sleep(3)
-
         self.start_input_controller()
 
         game_agent_class = offshoot.discover("GameAgent", selection=game_agent_class_name).get(game_agent_class_name, GameAgent)
@@ -260,8 +256,7 @@ class Game(offshoot.Pluggable):
         finally:
             self.stop_frame_grabber()
             self.stop_input_controller()
-            self.stop_crossbar()
-            
+
     @offshoot.forbidden
     def extract_window_geometry(self):
         if self.is_launched:
@@ -308,37 +303,15 @@ class Game(offshoot.Pluggable):
         return game_frame_buffer.frames[0], game_frame_buffer_pipeline.frames[0]
 
     @offshoot.forbidden
-    def start_crossbar(self):
-        if self.crossbar_process is not None:
-            self.stop_crossbar()
-
-        crossbar_command = f"crossbar start --config crossbar.json"
-
-        self.crossbar_process = subprocess.Popen(shlex.split(crossbar_command))
-
-        signal.signal(signal.SIGINT, self._handle_signal_crossbar)
-        signal.signal(signal.SIGTERM, self._handle_signal_crossbar)
-
-        atexit.register(self._handle_signal_crossbar, 15, None, False)
-
-    @offshoot.forbidden
-    def stop_crossbar(self):
-        if self.crossbar_process is None:
-            return None
-
-        self.crossbar_process.kill()
-        self.crossbar_process = None
-
-        atexit.unregister(self._handle_signal_crossbar)
-
-    @offshoot.forbidden
     def start_input_controller(self):
         if self.input_controller_process is not None:
             self.stop_input_controller()
 
         self.redis_client.set("SERPENT:GAME", self.__class__.__name__)
 
-        input_controller_command = f"python -m serpent.wamp_components.input_controller_component"
+        input_controller_command = (
+            "python -m serpent.input_controllers.redis_input_controller_worker"
+        )
 
         self.input_controller_process = subprocess.Popen(shlex.split(input_controller_command))
 
@@ -385,14 +358,6 @@ class Game(offshoot.Pluggable):
         if self.frame_grabber_process is not None:
             if self.frame_grabber_process.poll() is None:
                 self.frame_grabber_process.send_signal(signum)
-
-                if do_exit:
-                    exit()
-
-    def _handle_signal_crossbar(self, signum=15, frame=None, do_exit=True):
-        if self.crossbar_process is not None:
-            if self.crossbar_process.poll() is None:
-                self.crossbar_process.send_signal(signum)
 
                 if do_exit:
                     exit()

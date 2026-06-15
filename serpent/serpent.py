@@ -8,7 +8,7 @@ import time
 
 import offshoot
 
-from serpent.utilities import clear_terminal, display_serpent_logo, is_linux, is_windows, wait_for_crossbar
+from serpent.utilities import clear_terminal, display_serpent_logo, is_linux, is_windows
 
 from serpent.window_controller import WindowController
 
@@ -151,20 +151,11 @@ def setup_base():
         subprocess.call(shlex.split("conda install numpy scipy scikit-image scikit-learn h5py -y"), shell=True)
 
     subprocess.call(shlex.split("pip install -r requirements.txt"))
-    
-    # Install Crossbar
-    subprocess.call(shlex.split("pip install crossbar==18.6.1"))
 
     # Create Dataset Directories
     os.makedirs(os.path.join(os.getcwd(), "datasets/collect_frames"), exist_ok=True)
     os.makedirs(os.path.join(os.getcwd(), "datasets/collect_frames_for_context"), exist_ok=True)
     os.makedirs(os.path.join(os.getcwd(), "datasets/current"), exist_ok=True)
-
-    # Copy the Crossbar config
-    shutil.copy(
-        os.path.join(os.path.dirname(__file__), "crossbar.json"),
-        os.path.join(os.getcwd(), "crossbar.json")
-    )
 
 def setup_ocr():
     if is_linux():
@@ -242,17 +233,6 @@ def setup_dashboard():
     shutil.copytree(
         os.path.join(os.path.dirname(os.path.dirname(__file__)), "dashboard"),
         os.path.join(os.getcwd(), "dashboard")
-    )
-
-    # Copy the WAMP components to the install location dashboard directory
-    shutil.copy(
-        os.path.join(os.path.dirname(__file__), "wamp_components", "analytics_component.py"),
-        os.path.join(os.getcwd(), "dashboard", "analytics_component.py")
-    )
-
-    shutil.copy(
-        os.path.join(os.path.dirname(__file__), "wamp_components", "dashboard_api_component.py"),
-        os.path.join(os.getcwd(), "dashboard", "dashboard_api_component.py")
     )
 
     # Install Kivy
@@ -479,8 +459,6 @@ def dashboard(width=None, height=None):
     if width is not None and height is not None:
         width = int(width)
         height = int(height)
-
-    wait_for_crossbar()
 
     from serpent.dashboard.dashboard_app import DashboardApp
     DashboardApp(width=width, height=height).run()

@@ -10,14 +10,6 @@ analytics:
     persisted_events:
         - TOTAL_REWARD
 
-crossbar:
-    host: 127.0.0.1
-    port: 9999
-    realm: serpent
-    auth:
-        username: serpent
-        password: serpent
-    
 frame_handlers:
     COLLECT_FRAMES_FOR_CONTEXT:
         context: game

@@ -1,4 +1,4 @@
-from serpent.utilities import SerpentError, is_windows, wait_for_crossbar
+from serpent.utilities import SerpentError, is_windows
 
 from serpent.config import config
 
@@ -181,5 +181,4 @@ class DashboardRootWidget(Widget):
         self.add_widget(self.browser)
 
 if __name__ == "__main__":
-    wait_for_crossbar()
     DashboardApp().run()
