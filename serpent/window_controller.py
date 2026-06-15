@@ -1,4 +1,6 @@
-from serpent.utilities import is_linux, is_windows
+import warnings
+
+from serpent.utilities import is_linux, is_wayland, is_windows, is_x11_available
 
 
 class WindowControllerError(BaseException):
@@ -36,6 +38,25 @@ class WindowController:
 
     def _load_adapter(self):
         if is_linux():
+            # The Linux backend speaks X11; on Wayland it drives XWayland windows
+            # (how Steam/Proton games run). It needs an X server ($DISPLAY); a pure
+            # Wayland session with no XWayland can't be driven yet — native-Wayland
+            # backends (KWin/kdotool, ydotool, PipeWire) are a planned addition.
+            if is_wayland() and not is_x11_available():
+                raise WindowControllerError(
+                    "Running under Wayland with no XWayland ($DISPLAY unset). The current "
+                    "window/input/capture backends require X11/XWayland. Start the game as an "
+                    "XWayland window, or wait for the native-Wayland backends (MODERNIZATION.md "
+                    "Phase F)."
+                )
+
+            if is_wayland():
+                warnings.warn(
+                    "Wayland session detected; using the X11/XWayland backend. Only XWayland "
+                    "windows are supported (native-Wayland support is planned).",
+                    stacklevel=2,
+                )
+
             from serpent.window_controllers.linux_window_controller import LinuxWindowController
             return LinuxWindowController
         elif is_windows():

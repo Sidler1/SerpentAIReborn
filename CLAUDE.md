@@ -28,7 +28,7 @@ Most runtime commands assume the **repo root is the working directory** (see con
 ### Runtime prerequisites (to actually run a game agent, not just tests)
 - **Redis** on `localhost:6379` — required only for the **default `redis` transport**. The bus (frames, input, analytics) goes through `serpent/transport` (`transport.backend: redis | in_process` in config). `in_process` needs no Redis but runs the grabber as a thread and drives input directly (single process); `redis` keeps the multi-process model (grabber/input worker as subprocesses).
 - **`config/config.yml`** must exist in the CWD — `serpent/config.py` reads it **at import time** and raises if missing. The repo ships a stub `config/config.yml` + `config/config.plugins.yml` "to make unit testing possible."
-- **Tesseract** for OCR (`pytesseract`); an **X11** session for the current input/window backends (Wayland support is a roadmap phase).
+- **Tesseract** for OCR (`pytesseract`). Capture/input/window currently speak **X11**; on a **Wayland** session they work via **XWayland** (`$DISPLAY` must be set — true on KDE/GNOME by default), which covers Steam/Proton games. `WindowController` raises if Wayland is detected with no XWayland, and warns when falling back to XWayland. Native-Wayland backends (PipeWire capture, ydotool input, KWin/kdotool window control) are scaffolded but not implemented — see `serpent/window_controllers/wayland_window_controller.py` and MODERNIZATION.md Phase F.
 - Plugins are discovered from a `plugins/` directory (git-ignored) created by the CLI/SDK.
 
 ## Architecture
@@ -43,7 +43,7 @@ Built on **offshoot**, a tiny plugin framework **vendored into the repo at `./of
 
 ### Cross-platform backends (platform dispatch)
 - **Input** — `serpent/input_controller.py` defines the canonical key/button vocabulary via **sneakysnek** (`KeyboardKey`, `KeyboardEvent`, `MouseButton`, …) and an `InputControllers` enum; concrete controllers live in `serpent/input_controllers/` (`pyautogui_input_controller`, `native_win32_input_controller`, `client_input_controller`). Live input *capture* uses sneakysnek's `Recorder` in `serpent/input_recorder.py`. **No Wayland backend yet.**
-- **Window** — `serpent/window_controller.py` dispatches to `serpent/window_controllers/` (`linux_window_controller` = python-xlib/X11, `win32_window_controller` = pywin32).
+- **Window** — `serpent/window_controller.py` dispatches to `serpent/window_controllers/` (`linux_window_controller` = xdotool/X11+XWayland, `win32_window_controller` = pywin32, `wayland_window_controller` = native stub). `LinuxWindowController.get_window_geometry` uses `xdotool getwindowgeometry --shell` (no `xwininfo` dependency).
 
 ### Reinforcement learning (PyTorch)
 `serpent/machine_learning/reinforcement_learning/`: `agent.py` is the base `Agent` (handles the `game_inputs` → action-space mapping, the key abstraction — see `tests/unit/test_agent.py`). Concrete agents in `agents/`: `rainbow_dqn_agent`, `ppo_agent`, `random_agent`, `recorder_agent`. The Rainbow DQN and PPO implementations (`rainbow_dqn/`, `ppo/`) are **pure PyTorch** (no TF coupling). Context classification / object recognition under `machine_learning/` were TF/Keras-based and are being re-homed or dropped.

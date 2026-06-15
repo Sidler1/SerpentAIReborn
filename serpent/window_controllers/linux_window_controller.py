@@ -3,10 +3,14 @@ from serpent.window_controller import WindowController
 import subprocess
 import shlex
 
-import re
-
 
 class LinuxWindowController(WindowController):
+    """X11 / XWayland window control via xdotool.
+
+    Works for native-X11 windows and, on a Wayland session, for XWayland windows
+    (which is how Steam/Proton games typically run). Native-Wayland window control
+    (KWin/kdotool) is a planned addition — see MODERNIZATION.md Phase F.
+    """
 
     def __init__(self):
         pass
@@ -35,16 +39,28 @@ class LinuxWindowController(WindowController):
         return subprocess.check_output(shlex.split(f"xdotool getwindowname {focused_window_id}")).decode("utf-8").strip()
 
     def get_window_geometry(self, window_id):
-        geometry = dict()
+        # `xdotool getwindowgeometry --shell` reports absolute X/Y plus WIDTH/HEIGHT
+        # in one call, so we no longer need xwininfo (which isn't always installed,
+        # and is absent under a minimal Wayland/KDE setup).
+        output = subprocess.check_output(
+            shlex.split(f"xdotool getwindowgeometry --shell {window_id}")
+        ).decode("utf-8")
 
-        window_geometry = subprocess.check_output(shlex.split(f"xdotool getwindowgeometry {window_id}")).decode("utf-8").strip()
-        size = re.match(r"\s+Geometry: ([0-9]+x[0-9]+)", window_geometry.split("\n")[2]).group(1).split("x")
+        return self._parse_geometry(output)
 
-        geometry["width"] = int(size[0])
-        geometry["height"] = int(size[1])
+    @staticmethod
+    def _parse_geometry(shell_output):
+        values = {}
 
-        window_information = subprocess.check_output(shlex.split(f"xwininfo -id {window_id}")).decode("utf-8").strip()
-        geometry["x_offset"] = int(re.match(r"\s+Absolute upper-left X:\s+([0-9]+)", window_information.split("\n")[2]).group(1))
-        geometry["y_offset"] = int(re.match(r"\s+Absolute upper-left Y:\s+([0-9]+)", window_information.split("\n")[3]).group(1))
+        for line in shell_output.strip().splitlines():
+            if "=" not in line:
+                continue
+            key, _, value = line.partition("=")
+            values[key.strip()] = value.strip()
 
-        return geometry
+        return {
+            "width": int(values["WIDTH"]),
+            "height": int(values["HEIGHT"]),
+            "x_offset": int(values["X"]),
+            "y_offset": int(values["Y"]),
+        }

@@ -74,10 +74,16 @@ Each phase = one commit/PR on `reborn`, with an explicit exit criterion.
   in-process (shared-memory/queues) default, Redis optional; `aioredis` → `redis.asyncio`.
 - **Exit:** end-to-end run on in-process transport, Redis still selectable via config.
 
-### Phase F — Wayland backends (capture / input / window), Linux-first
-- Wayland capture (xdg-desktop-portal / PipeWire), input (libei / ydotool / evdev), window control;
-  integrated into the existing controller dispatch (X11 + Win32 retained as fallbacks).
-- **Exit:** capture + input + window work on Wayland; manual smoke test documented.
+### Phase F — Wayland support (XWayland-first), Linux
+- **Decision (KDE Plasma Wayland, XWayland active):** target **XWayland first** — the existing
+  X11 stack (mss capture, xdotool window control, pyautogui input) already drives XWayland
+  windows, which is how Steam/Proton games run. Native-Wayland backends (PipeWire capture,
+  ydotool input, KWin/kdotool window control) are scaffolded behind the interface and deferred
+  (they need extra system tools + uinput/ydotoold and can't be tested in the agent sandbox).
+- Done: removed the `xwininfo` dependency (`xdotool getwindowgeometry --shell`); added
+  `is_wayland()`/`is_x11_available()` detection; `WindowController` errors on Wayland-without-
+  XWayland and warns when falling back; `WaylandWindowController` stub marks the native seam.
+- **Exit:** XWayland path works on a Wayland session (user smoke-test); native seam documented.
 
 ### Phase G — ML / RL modernization (PyTorch 2.x)
 - Update Rainbow DQN + PPO agents to torch 2.x idioms, device-agnostic.

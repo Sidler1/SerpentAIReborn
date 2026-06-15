@@ -1,3 +1,4 @@
+import os
 import sys
 import subprocess
 
@@ -26,6 +27,22 @@ def is_linux():
 
 def is_windows():
     return operating_system().name == "WINDOWS"
+
+
+def is_wayland():
+    """True when running under a Wayland session (regardless of XWayland)."""
+    return os.environ.get("XDG_SESSION_TYPE") == "wayland" or bool(os.environ.get("WAYLAND_DISPLAY"))
+
+
+def is_x11_available():
+    """True when an X server is reachable — native X11 or XWayland (``$DISPLAY`` set).
+
+    The current Linux capture/input/window backends speak X11, so on a Wayland
+    session they require XWayland (which exposes ``$DISPLAY``). Native-Wayland
+    backends (PipeWire capture, ydotool input, KWin window control) are a planned
+    addition; see MODERNIZATION.md Phase F.
+    """
+    return bool(os.environ.get("DISPLAY"))
 
 
 def clear_terminal():
