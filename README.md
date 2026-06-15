@@ -35,9 +35,14 @@ planned next and [`CLAUDE.md`](CLAUDE.md) for an architecture orientation.
 ```bash
 git clone https://github.com/Sidler1/SerpentAIReborn.git
 cd SerpentAIReborn
-uv sync            # creates .venv on Python 3.13 and installs everything
+./setup.sh         # installs uv (if needed) + deps, detects your GPU, installs the matching PyTorch
 uv run serpent --help
 ```
+
+`setup.sh` auto-selects the right PyTorch build — **CUDA** for NVIDIA, **ROCm**
+for AMD, **CPU** otherwise (and MPS on macOS). Override with
+`SERPENT_TORCH_BACKEND=cuda|rocm|cpu` or `SERPENT_ROCM_INDEX=…`. If you don't have
+a GPU and just want the defaults, `uv sync` alone also works.
 
 ## Quickstart
 
