@@ -1,16 +1,12 @@
 import pytest
 
-from serpent.machine_learning.reinforcement_learning.agent import Agent
-
-from serpent.input_controller import KeyboardKey, KeyboardEvent, KeyboardEvents
-
 from serpent.enums import InputControlTypes
-
+from serpent.input_controller import KeyboardEvent, KeyboardEvents, KeyboardKey
+from serpent.machine_learning.reinforcement_learning.agent import Agent
 from serpent.utilities import SerpentError
 
 
 class AgentTest(Agent):
-
     def __init__(self, name, game_inputs=None, callbacks=None):
         super().__init__(name, game_inputs=game_inputs, callbacks=callbacks)
 
@@ -24,10 +20,10 @@ class TestAgent:
                     "control_type": InputControlTypes.DISCRETE,
                     "inputs": {
                         "A": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_A)],
-                        "B": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_B)]
-                    }
+                        "B": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_B)],
+                    },
                 }
-            ]
+            ],
         )
 
         self.agent_game_inputs_complex_discrete = AgentTest(
@@ -37,18 +33,18 @@ class TestAgent:
                     "control_type": InputControlTypes.DISCRETE,
                     "inputs": {
                         "A": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_A)],
-                        "B": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_B)]
-                    }
+                        "B": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_B)],
+                    },
                 },
                 {
                     "control_type": InputControlTypes.DISCRETE,
                     "inputs": {
                         "C": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_C)],
                         "D": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_D)],
-                        "E": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_E)]
-                    }
-                }
-            ]
+                        "E": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_E)],
+                    },
+                },
+            ],
         )
 
         self.agent_game_inputs_complex_mixed = AgentTest(
@@ -59,17 +55,17 @@ class TestAgent:
                     "control_type": InputControlTypes.DISCRETE,
                     "inputs": {
                         "A": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_A)],
-                        "B": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_B)]
-                    }
+                        "B": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_B)],
+                    },
                 },
-                {   
+                {
                     "name": "SECOND",
                     "control_type": InputControlTypes.CONTINUOUS,
                     "inputs": {
                         "events": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_A)],
                         "minimum": 0.001,
-                        "maximum": 1.0
-                    }
+                        "maximum": 1.0,
+                    },
                 },
                 {
                     "name": "THIRD",
@@ -77,10 +73,10 @@ class TestAgent:
                     "inputs": {
                         "C": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_C)],
                         "D": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_D)],
-                        "E": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_E)]
-                    }
-                }
-            ]
+                        "E": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_E)],
+                    },
+                },
+            ],
         )
 
     def teardown_method(self, method):
@@ -96,19 +92,17 @@ class TestAgent:
         AgentTest("TEST", game_inputs=[])
 
     def test_agent_should_generate_game_input_mappings_with_a_single_discrete_space(self):
-        assert self.agent_game_inputs_simple_discrete.game_inputs_mappings == [
-            {0: "A", 1: "B"}
-        ]
+        assert self.agent_game_inputs_simple_discrete.game_inputs_mappings == [{0: "A", 1: "B"}]
 
     def test_agent_should_generate_game_input_mappings_with_multiple_discrete_spaces(self):
         assert self.agent_game_inputs_complex_discrete.game_inputs_mappings == [
             {0: "A", 1: "B"},
-            {0: "C", 1: "D", 2: "E"}
+            {0: "C", 1: "D", 2: "E"},
         ]
 
     def test_agent_should_generate_game_input_mappings_with_mixed_spaces(self):
         assert self.agent_game_inputs_complex_mixed.game_inputs_mappings == [
             {0: "A", 1: "B"},
             None,
-            {0: "C", 1: "D", 2: "E"}
+            {0: "C", 1: "D", 2: "E"},
         ]

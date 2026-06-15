@@ -1,16 +1,9 @@
-import pytest
-
-from serpent.machine_learning.reinforcement_learning.agents.random_agent import RandomAgent
-
-from serpent.input_controller import KeyboardKey, KeyboardEvent, KeyboardEvents
-
 from serpent.enums import InputControlTypes
-
-from serpent.utilities import SerpentError
+from serpent.input_controller import KeyboardEvent, KeyboardEvents, KeyboardKey
+from serpent.machine_learning.reinforcement_learning.agents.random_agent import RandomAgent
 
 
 class RandomAgentTest(RandomAgent):
-
     def __init__(self, name, game_inputs=None, callbacks=None, seed=None):
         super().__init__(name, game_inputs=game_inputs, callbacks=callbacks, seed=seed)
 
@@ -25,17 +18,17 @@ class TestRandomAgent:
                     "control_type": InputControlTypes.DISCRETE,
                     "inputs": {
                         "A": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_A)],
-                        "B": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_A)]
-                    }
+                        "B": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_A)],
+                    },
                 },
-                {   
+                {
                     "name": "SECOND",
                     "control_type": InputControlTypes.CONTINUOUS,
                     "inputs": {
                         "events": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_A)],
                         "minimum": 0.001,
-                        "maximum": 1.0
-                    }
+                        "maximum": 1.0,
+                    },
                 },
                 {
                     "name": "THIRD",
@@ -43,10 +36,10 @@ class TestRandomAgent:
                     "inputs": {
                         "C": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_C)],
                         "D": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_D)],
-                        "E": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_E)]
-                    }
-                }
-            ]
+                        "E": [KeyboardEvent(KeyboardEvents.DOWN, KeyboardKey.KEY_E)],
+                    },
+                },
+            ],
         )
 
     def teardown_method(self, method):
@@ -74,5 +67,8 @@ class TestRandomAgent:
         assert actions[2][0] in ["C", "D", "E"]
         assert isinstance(actions[2][1], list)
         assert isinstance(actions[2][1][0], KeyboardEvent)
-        assert actions[2][1][0].keyboard_key in [KeyboardKey.KEY_C, KeyboardKey.KEY_D, KeyboardKey.KEY_E]
-
+        assert actions[2][1][0].keyboard_key in [
+            KeyboardKey.KEY_C,
+            KeyboardKey.KEY_D,
+            KeyboardKey.KEY_E,
+        ]

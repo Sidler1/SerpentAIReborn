@@ -1,14 +1,16 @@
 from serpent.logger import Logger
 
-from comet_ml import Experiment
-
 import inspect
 
 
 class CometMLLogger(Logger):
-    
+
     def __init__(self, logger_kwargs=None):
         super().__init__(logger_kwargs=logger_kwargs)
+
+        # comet_ml is an optional logging backend; import lazily so the rest of
+        # serpent.loggers imports without it installed.
+        from comet_ml import Experiment
 
         self.experiment = Experiment(
             api_key=self.config["api_key"], 
