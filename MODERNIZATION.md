@@ -5,6 +5,13 @@ branch) from its mid-2020 state (Python 3.8, Poetry, torch 1.5+cu101,
 TensorFlow 2.2, Crossbar/WAMP, cefpython/kivy) up to a modern, cross-platform,
 PyTorch-2 framework on Python 3.13+.
 
+> **Status: all phases A–J complete.** The framework imports cleanly on
+> Linux/Python 3.13, every dead 2020 subsystem is replaced, and the suite is
+> green. Remaining work is intentionally deferred and tracked inline below:
+> native-Wayland backends (F), a torchvision port of the context classifiers (G),
+> and the deep game-specific AI for the Isaac/YMBAB plugins (I). Live gameplay /
+> GPU runs require a real game + display and are user smoke-tests.
+
 > **Strategy pivot.** The original plan rebuilt from the `master` prototype.
 > The `dev` branch turned out to be the far more complete official framework, so
 > we modernize **it** in place. The earlier from-scratch work lives on the

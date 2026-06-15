@@ -1,49 +1,96 @@
-![](https://s3.ca-central-1.amazonaws.com/serpent-ai-assets/SerpentFBCover.png)
+# Serpent.AI Reborn — Game Agent Framework (Python)
 
-# Serpent.AI - Game Agent Framework (Python)
+[![Python 3.13+](https://img.shields.io/badge/python-3.13%2B-blue.svg)]()
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE.md)
+[![Built with uv](https://img.shields.io/badge/built%20with-uv-de5fe9.svg)](https://github.com/astral-sh/uv)
 
-[![](https://img.shields.io/badge/project-website-brightgreen.svg?colorB=1bcc6f&longCache=true)](http://serpent.ai)
-[![](https://img.shields.io/badge/project-blog-brightgreen.svg?colorB=1bcc6f&longCache=true)](http://blog.serpent.ai)
-[![](https://img.shields.io/badge/project-wiki-brightgreen.svg?colorB=1bcc6f&longCache=true)](https://github.com/SerpentAI/SerpentAI/wiki)    
-[![](https://img.shields.io/badge/pypi-v2018.1.2-brightgreen.svg?colorB=007ec6&longCache=true)]()
-[![](https://img.shields.io/badge/python-3.6-brightgreen.svg?colorB=007ec6&longCache=true)]()
-[![](https://img.shields.io/badge/license-MIT-brightgreen.svg?colorB=007ec6&longCache=true)]()  
-[![](https://img.shields.io/badge/twitter-@Serpent__AI-brightgreen.svg?colorB=1da1f2&longCache=true)](https://twitter.com/Serpent_AI)
+Serpent.AI turns **any video game you own** into a sandbox environment for AI / ML
+experimentation — capture the game's frames, run a *game agent* that analyzes them
+(computer vision, OCR, sprites, reinforcement learning), and synthesize keyboard /
+mouse input back into the game. It's plugin-based (separate plugins for game support
+and for game agents) so experiments are portable.
 
-## Update: Revival (May 2020)
+**Reborn** is a 2026 modernization of the original [SerpentAI](https://github.com/SerpentAI/SerpentAI)
+framework (last released 2020.2.1, Python 3.8): now Python 3.13+, [uv](https://github.com/astral-sh/uv),
+PyTorch 2.x, a pluggable transport, Wayland-aware, and free of the dead 2020
+dependency stack. See [`MODERNIZATION.md`](MODERNIZATION.md) for the full
+journey and [`CLAUDE.md`](CLAUDE.md) for an architecture orientation.
 
-Development work has resumed on the framework with the aim of bringing it into 2020: Python 3.8+, Less Dependencies, Ease of Use (Installer, GUI) and much more! Still open-source with a permissive license and looking into a Steam distribution for non-technical users. 🐍
+> Core tenets (unchanged from the original): **(1)** run natively — no Docker or VNC;
+> **(2)** bring your own games — no licensing deals or special APIs; **(3)** encourage
+> diverse approaches — RL, classical CV, or just mashing buttons. All allowed.
 
-## ~~Warning: End of life (November 2018)~~
+## Requirements
 
-Serpent.AI is a simple yet powerful, novel framework to assist developers in the creation of game agents. Turn ANY video game you own  into a sandbox environment ripe for experimentation, all with familiar Python code. The framework's _raison d'être_ is first and foremost to provide a valuable tool for Machine Learning & AI research. It also turns out to be ridiculously fun to use as a hobbyist (and dangerously addictive; a fair warning)!
+- **Python 3.13+** and **[uv](https://docs.astral.sh/uv/getting-started/installation/)**
+- **Linux** (primary) or **Windows**. On a **Wayland** session the capture/input/window
+  backends run via **XWayland** (`$DISPLAY` must be set — the default on KDE/GNOME), which
+  covers Steam/Proton games. Native-Wayland backends are scaffolded but not yet implemented.
+- Optional: **Redis** (only for the `redis` transport — the in-process transport needs nothing),
+  **Tesseract** (OCR), a **GPU** (CUDA/ROCm/MPS auto-detected for training), and **Steam** to run
+  the bundled example games.
 
-The framework features a large assortment of supporting modules that provide solutions to commonly encountered scenarios when using video games as environments  as well as CLI tools to accelerate development. It provides some useful conventions but is absolutely NOT opiniated about what you put in your agents: Want to use the latest, cutting-edge deep reinforcement learning algorithm? ALLOWED. Want to use computer vision techniques, image processing and trigonometry? ALLOWED. Want to randomly press the Left or Right buttons? _sigh_ ALLOWED. To top it all off, Serpent.AI was designed to be entirely plugin-based (for both game support and game agents) so your experiments are actually portable and distributable to your peers and random strangers on the Internet.
+## Install
 
-Serpent.AI supports Linux, Windows ~~& macOS~~.
+```bash
+git clone https://github.com/Sidler1/SerpentAIReborn.git
+cd SerpentAIReborn
+uv sync            # creates .venv on Python 3.13 and installs everything
+uv run serpent --help
+```
 
-_The next version of the framework will officially stop supporting macOS. Apple's aversion to Nvidia in their products means no recent macOS machine can run CUDA, an essential piece of technology for Serpent.AI's real-time training. Other decisions like preventing 32-bit applications from running in Catalina and deprecating OpenGL do not help make a case to support the OS._ 
+## Quickstart
 
-![](https://s3.ca-central-1.amazonaws.com/serpent-ai-assets/demo_isaac.gif)
+```bash
+uv run serpent --help                 # CLI surface
+uv run serpent dashboard              # analytics dashboard  -> http://127.0.0.1:8500
+uv run serpent visual-debugger        # live frame viewer    -> http://127.0.0.1:8501
+```
 
-_Experiment: Game agent learning to defeat Monstro (The Binding of Isaac: Afterbirth+)_
+Three example game plugins live under [`plugins/`](plugins/):
 
-## Background
+- **Super Hexagon** — a complete worked reference: a modern `Game` + `GameAPI` + a real
+  `PLAY` agent showing the frame → decision → input loop end to end.
+- **Binding of Isaac: Rebirth** and **You Must Build A Boat** — modern-API scaffolds that
+  load and validate; their original game-specific AI is preserved in git history on the
+  `master` branch and is a work-in-progress port.
 
-The project was born out of admiration for / frustration with [OpenAI Universe](https://github.com/openai/universe). The idea is perfect, let's be honest, but some implementation details leave a lot to be desired. From these, the core tennets of the framework were established:
+## Architecture (at a glance)
 
-1. Thou shall run natively. Thou shalt not use Docker containers or VNC servers.
-2. Thou shall allow a user to bring their own games. Thou shalt not wait for licensing deals and special game APIs.
-3. Thou shall encourage diverse and creative approaches. Thou shalt not only enable AI flavors of the month.
+A `Game` plugin describes a title (window, Steam launcher, screen regions, a `GameAPI`);
+a `GameAgent` plugin decides what to do each frame via *frame handlers*. The play loop
+captures frames (mss) onto a **pluggable transport** (in-process or Redis), an agent
+consumes them, and input is applied through a cross-platform input controller. Plugins are
+discovered by the vendored **offshoot** framework. Reinforcement learning (Rainbow DQN, PPO)
+is **PyTorch 2.x**, device-agnostic. Full detail is in [`CLAUDE.md`](CLAUDE.md).
 
-_Want to know more about how Serpent.AI came to be? Read [The Story Behind Serpent.AI](http://blog.serpent.ai/the-story-behind-serpent-ai/) on the blog!_
+## What changed from SerpentAI 2020.2.1
 
-## Documentation
+| Area | Before (2020) | Now (Reborn) |
+|---|---|---|
+| Python / build | 3.8 / Poetry | 3.13+ / uv |
+| ML | TensorFlow + torch 1.5+cu101 | **PyTorch 2.x**, device auto-detect; TF removed |
+| Messaging | Crossbar/WAMP (autobahn/twisted) | removed; input over a Redis/in-process bridge |
+| Frame/IO bus | hard-wired Redis | **pluggable transport** (redis \| in_process) |
+| Plugin system | pip `offshoot` | **vendored** offshoot, 3.13-clean |
+| Dashboard / debugger | cefpython3 + Kivy + Pony | **FastAPI** web apps |
+| Wayland | none | XWayland-first support |
+| Tooling | — | ruff, pytest, GitHub Actions CI |
 
-Guides, tutorials and videos are being produced and added to the [GitHub Wiki](https://github.com/SerpentAI/SerpentAI/wiki). It currently is the official source of documentation.
+Dropped entirely: TensorFlow, crossbar/autobahn/twisted, cefpython3, kivy, pony, aioredis,
+comet_ml, lmdb, luminoth, vendored Windows wheels.
 
-![](https://s3.ca-central-1.amazonaws.com/serpent-ai-assets/demo_ymbab.gif)
+## Development
 
-_Experiment: Game agent learning to match tiles (You Must Build a Boat)_
+```bash
+uv run pytest                 # test suite
+uv run ruff check .           # lint
+uv run ruff format .          # format
+```
 
-_Business Contact: info@serpent.ai_
+CI (GitHub Actions) runs lint + format-check + tests on Python 3.13 / Linux.
+
+## License & credits
+
+MIT. Original framework by Nicholas Brochu and the SerpentAI contributors;
+Reborn is a community modernization fork.
