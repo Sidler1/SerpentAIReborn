@@ -1,5 +1,5 @@
 
-class GameLauncherException(BaseException):
+class GameLauncherException(Exception):
     pass
 
 

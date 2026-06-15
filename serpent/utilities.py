@@ -5,7 +5,7 @@ import subprocess
 import enum
 
 
-class SerpentError(BaseException):
+class SerpentError(Exception):
     pass
 
 

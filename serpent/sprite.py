@@ -4,7 +4,7 @@ import random
 import uuid
 
 
-class SpriteError(BaseException):
+class SpriteError(Exception):
     pass
 
 

@@ -1,3 +1,5 @@
-from serpent.machine_learning.context_classification.context_classifiers.cnn_inception_v3_context_classifier import CNNInceptionV3ContextClassifier
-from serpent.machine_learning.context_classification.context_classifiers.cnn_xception_context_classifier import CNNXceptionContextClassifier
-
+# The concrete context classifiers (CNN Inception-V3 / Xception) are TensorFlow/
+# Keras based and currently raise on import (deprecated pending a torchvision
+# port — see MODERNIZATION.md Phase G). They are imported lazily where used
+# (serpent.machine_learning.context_classification.context_classifier), so this
+# package stays importable; importing a classifier directly is what raises.

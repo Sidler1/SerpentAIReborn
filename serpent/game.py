@@ -36,7 +36,7 @@ import numpy as np
 from serpent.config import config
 
 
-class GameError(BaseException):
+class GameError(Exception):
     pass
 
 
@@ -304,7 +304,7 @@ class Game(offshoot.Pluggable):
 
             return
 
-        frame_grabber_command = f"serpent grab_frames {self.window_geometry['width']} {self.window_geometry['height']} {self.window_geometry['x_offset']} {self.window_geometry['y_offset']}"
+        frame_grabber_command = f"serpent grab-frames {self.window_geometry['width']} {self.window_geometry['height']} {self.window_geometry['x_offset']} {self.window_geometry['y_offset']}"
 
         if pipeline_string is not None:
             frame_grabber_command += f" {pipeline_string}"

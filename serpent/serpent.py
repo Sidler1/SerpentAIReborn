@@ -1,4 +1,11 @@
 #!/usr/bin/env python
+"""Serpent command *implementations*.
+
+These functions are the implementation library behind the ``serpent`` CLI
+(``cli.py``); they are not a CLI themselves. The previous parallel dispatcher
+(``execute()`` + command mappings + ``__main__``) was removed during the CLI
+consolidation — ``cli.py`` is the single entry point.
+"""
 import os
 import sys
 import shutil
@@ -18,54 +25,6 @@ sys.path.insert(0, os.getcwd())
 # On Windows, disable the Fortran CTRL-C handler that gets installed with SciPy
 if is_windows:
     os.environ['FOR_DISABLE_CONSOLE_CTRL_HANDLER'] = 'T'
-
-VERSION = "2020.2.1"
-
-valid_commands = [
-    "setup",
-    "update",
-    "modules",
-    "grab_frames",
-    "launch",
-    "play",
-    "record",
-    "generate",
-    "activate",
-    "deactivate",
-    "plugins",
-    "train",
-    "capture",
-    "visual_debugger",
-    "window_name",
-    "record_inputs",
-    "dashboard",
-    "object_recognition"
-]
-
-
-def execute():
-    if len(sys.argv) == 1:
-        executable_help()
-    elif len(sys.argv) > 1:
-        if sys.argv[1] == "-h" or sys.argv[1] == "--help":
-            executable_help()
-        else:
-            command = sys.argv[1]
-
-            if command not in valid_commands:
-                raise Exception("'%s' is not a valid Serpent command." % command)
-
-            command_function_mapping[command](*sys.argv[2:])
-
-
-def executable_help():
-    print(f"\nSerpent.AI v{VERSION}")
-    print("Available Commands:\n")
-
-    for command, description in command_description_mapping.items():
-        print(f"{command.rjust(16)}: {description}")
-
-    print("")
 
 
 def setup(module=None):
@@ -350,8 +309,6 @@ def generate(plugin_type):
 def train(training_type, *args):
     if training_type == "context":
         train_context(*args)
-    elif training_type == "object":
-        train_object(*args)
 
 
 def capture(capture_type, game_name, interval=1, extra=None, extra_2=None):
@@ -401,15 +358,6 @@ def record_inputs():
 def dashboard(project_key=None):
     from serpent.dashboard.app import run
     run(project_key=project_key)
-
-
-def object_recognition(game_agent_name, model_name):
-    model_path = f"plugins/{game_agent_name}Plugin/files/ml_models/object_recognition/{model_name}"
-
-    from serpent.machine_learning.object_recognition.object_recognizer import ObjectRecognizer
-    object_recognizer = ObjectRecognizer(model_name, model_path=model_path)
-
-    object_recognizer.predict_directory("datasets/collect_frames")
 
 
 def generate_game_plugin():
@@ -547,28 +495,6 @@ def train_context(epochs=3, validate=True, autosave=False):
     ContextClassifier.executable_train(epochs=int(epochs), validate=argv_is_true(validate), autosave=argv_is_true(autosave))
 
 
-def train_object(name, algorithm, *classes):
-    from serpent.machine_learning.object_recognition.object_recognizer import ObjectRecognizer, ObjectRecognizers
-
-    backend = "luminoth"
-
-    backend_mapping = {
-        "luminoth": ObjectRecognizers.LUMINOTH
-    }
-
-    object_recognizer = ObjectRecognizer(
-        name,
-        backend=backend_mapping[backend],
-        algorithm=algorithm,
-        classes=classes
-    )
-
-    import signal
-    signal.signal(signal.SIGINT, object_recognizer.on_interrupt)
-
-    object_recognizer.train()
-
-
 def initialize_game(game_name):
     game_class_name = f"Serpent{game_name}Game"
 
@@ -585,49 +511,3 @@ def initialize_game(game_name):
 
 def argv_is_true(arg):
     return arg in [True, "True"]
-
-
-command_function_mapping = {
-    "setup": setup,
-    "update": update,
-    "modules": modules,
-    "grab_frames": grab_frames,
-    "activate": activate,
-    "deactivate": deactivate,
-    "plugins": plugins,
-    "launch": launch,
-    "play": play,
-    "record": record,
-    "generate": generate,
-    "train": train,
-    "capture": capture,
-    "visual_debugger": visual_debugger,
-    "window_name": window_name,
-    "record_inputs": record_inputs,
-    "dashboard": dashboard,
-    "object_recognition": object_recognition
-}
-
-command_description_mapping = {
-    "setup": "Perform first time setup for the framework",
-    "update": "Update the framework to the latest version",
-    "modules": "List the install status of the framework's optional modules",
-    "grab_frames": "Start the frame grabber",
-    "activate": "Activate a plugin",
-    "deactivate": "Deactivate a plugin",
-    "plugins": "List all locally-available plugins",
-    "launch": "Launch a game through a plugin",
-    "play": "Play a game with a game agent through plugins",
-    "record": "Record player input from a game",
-    "generate": "Generate code for game and game agent plugins",
-    "train": "Train a context classifier with collected context frames",
-    "capture": "Capture frames, screen regions and contexts from a game",
-    "visual_debugger": "Launch the visual debugger",
-    "window_name": "Launch a utility to find a game's window name",
-    "record_inputs": "Start the input recorder",
-    "dashboard": "Launch the dashboard",
-    "object_recognition": "Perform object recognition on collected frames"
-}
-
-if __name__ == "__main__":
-    execute()

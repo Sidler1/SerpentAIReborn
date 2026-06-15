@@ -114,7 +114,7 @@ class InputControllers(enum.Enum):
     NATIVE_WIN32 = 2
 
 
-class InputControllerError(BaseException):
+class InputControllerError(Exception):
     pass
 
 

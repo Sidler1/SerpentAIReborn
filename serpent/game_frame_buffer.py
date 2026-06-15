@@ -3,7 +3,7 @@ from serpent.visual_debugger.visual_debugger import VisualDebugger
 import numpy as np
 
 
-class GameFrameBufferError(BaseException):
+class GameFrameBufferError(Exception):
     pass
 
 

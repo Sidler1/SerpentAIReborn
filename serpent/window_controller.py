@@ -3,7 +3,7 @@ import warnings
 from serpent.utilities import is_linux, is_wayland, is_windows, is_x11_available
 
 
-class WindowControllerError(BaseException):
+class WindowControllerError(Exception):
     pass
 
 

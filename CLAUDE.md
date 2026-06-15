@@ -12,7 +12,7 @@ Branches: `reborn` (active work) · `dev` (pristine SerpentAI 2020.2.1) · `mast
 
 ## Commands
 
-Tooling is **uv** (migrated off Poetry). The `serpent` console script maps to `cli:cli` (the click CLI in top-level `cli.py`).
+Tooling is **uv** (migrated off Poetry). The `serpent` console script maps to `cli:cli` — the click CLI in top-level `cli.py` is the **single entry point**, delegating to the implementation functions in `serpent/serpent.py` (which is a plain library now — its old parallel `execute()` dispatcher was removed). Note `serpent grab-frames` is the command the play loop spawns for the frame grabber.
 
 ```bash
 uv sync --dev                 # create/refresh the environment (.venv, Python 3.13)

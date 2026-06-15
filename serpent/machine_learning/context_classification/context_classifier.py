@@ -6,7 +6,7 @@ import random
 import skimage.io
 
 
-class ContextClassifierError(BaseException):
+class ContextClassifierError(Exception):
     pass
 
 

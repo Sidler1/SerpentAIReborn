@@ -95,10 +95,9 @@ def update():
     print("Update Successful!")
 
 
-@click.command(help="Launch the Serpent.AI GUI")
+@click.command(help="Serpent.AI GUI (now web-based)")
 def gui():
-    # TODO: Implement
-    pass
+    print("The GUI is now web-based. Use 'serpent dashboard' or 'serpent visual-debugger'.")
 
 
 @click.command(help="Launch the Serpent.AI dashboard (local web app)")
@@ -155,10 +154,11 @@ def show_plugins():
     pass
 
 
-@click.command(help="List all installed plugins")
+@click.command(help="List all locally-available plugins")
 def plugins():
-    # TODO: Implement
-    pass
+    from serpent import serpent
+
+    serpent.plugins()
 
 
 @click.command(help="List the installed game plugins")
@@ -185,28 +185,109 @@ def game_instructions():
     pass
 
 
-@click.command(help="Launch a game")
-def launch():
-    # TODO: Implement
-    pass
+@click.command(help="Launch a game through a plugin")
+@click.argument("game_name")
+def launch(game_name):
+    from serpent import serpent
+
+    serpent.launch(game_name)
 
 
-@click.command(help="Train a game agent")
-def train():
-    # TODO: Implement
-    pass
+@click.command(help="Train a context classifier (training_type is currently 'context')")
+@click.argument("training_type")
+@click.argument("args", nargs=-1)
+def train(training_type, args):
+    from serpent import serpent
+
+    serpent.train(training_type, *args)
 
 
-@click.command(help="Play a game using a game agent")
-def play():
-    # TODO: Implement
-    pass
+@click.command(help="Play a game with a game agent through plugins")
+@click.argument("game_name")
+@click.argument("game_agent_name")
+@click.option("--frame-handler", default=None)
+def play(game_name, game_agent_name, frame_handler):
+    from serpent import serpent
+
+    serpent.play(game_name, game_agent_name, frame_handler=frame_handler)
 
 
-@click.command(help="Record inputs while playing a game")
-def record():
-    # TODO: Implement
-    pass
+@click.command(help="Record player input from a game")
+@click.argument("game_name")
+@click.argument("game_agent_name")
+def record(game_name, game_agent_name):
+    from serpent import serpent
+
+    serpent.record(game_name, game_agent_name)
+
+
+@click.command(name="grab-frames", help="Start the frame grabber (used internally by the play loop)")
+@click.argument("width")
+@click.argument("height")
+@click.argument("x_offset")
+@click.argument("y_offset")
+@click.argument("pipeline_string", required=False, default=None)
+def grab_frames(width, height, x_offset, y_offset, pipeline_string):
+    from serpent import serpent
+
+    serpent.grab_frames(width, height, x_offset, y_offset, pipeline_string)
+
+
+@click.command(help="Generate code for a game or game agent plugin")
+@click.argument("plugin_type")
+def generate(plugin_type):
+    from serpent import serpent
+
+    serpent.generate(plugin_type)
+
+
+@click.command(help="Capture frames, screen regions or contexts from a game")
+@click.argument("capture_type")
+@click.argument("game_name")
+@click.option("--interval", default=1)
+@click.option("--extra", default=None)
+@click.option("--extra-2", default=None)
+def capture(capture_type, game_name, interval, extra, extra_2):
+    from serpent import serpent
+
+    serpent.capture(capture_type, game_name, interval=interval, extra=extra, extra_2=extra_2)
+
+
+@click.command(name="window-name", help="Find a game's window name")
+def window_name():
+    from serpent import serpent
+
+    serpent.window_name()
+
+
+@click.command(name="record-inputs", help="Start the input recorder")
+def record_inputs():
+    from serpent import serpent
+
+    serpent.record_inputs()
+
+
+@click.command(help="Activate a plugin")
+@click.argument("plugin_name")
+def activate(plugin_name):
+    from serpent import serpent
+
+    serpent.activate(plugin_name)
+
+
+@click.command(help="Deactivate a plugin")
+@click.argument("plugin_name")
+def deactivate(plugin_name):
+    from serpent import serpent
+
+    serpent.deactivate(plugin_name)
+
+
+@click.command(help="List the install status of the optional modules")
+def modules():
+    from serpent import serpent
+
+    serpent.modules()
 
 
 # SDK
@@ -438,6 +519,14 @@ cli.add_command(launch)
 cli.add_command(train)
 cli.add_command(play)
 cli.add_command(record)
+cli.add_command(grab_frames)
+cli.add_command(generate)
+cli.add_command(capture)
+cli.add_command(window_name)
+cli.add_command(record_inputs)
+cli.add_command(activate)
+cli.add_command(deactivate)
+cli.add_command(modules)
 
 # SDK
 cli.add_command(sdk_setup)

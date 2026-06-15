@@ -11,7 +11,7 @@ import io
 from PIL import Image
 
 
-class GameFrameError(BaseException):
+class GameFrameError(Exception):
     pass
 
 

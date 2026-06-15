@@ -1,7 +1,7 @@
 from serpent.frame_transformer import FrameTransformer
 
 
-class FrameTransformationPipelineError(BaseException):
+class FrameTransformationPipelineError(Exception):
     pass
 
 

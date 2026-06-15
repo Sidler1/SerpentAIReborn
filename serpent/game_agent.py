@@ -42,7 +42,7 @@ from serpent.transport import get_transport
 from datetime import datetime
 
 
-class GameAgentError(BaseException):
+class GameAgentError(Exception):
     pass
 
 

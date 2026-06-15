@@ -7,7 +7,7 @@ from serpent.config import config
 import json
 
 
-class AnalyticsClientError(BaseException):
+class AnalyticsClientError(Exception):
     pass
 
 
