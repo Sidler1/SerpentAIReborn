@@ -1,13 +1,13 @@
-"""Peglin aiming strategy.
+"""Peglin aiming strategy (from the wiki's combat rules).
 
-The orb launches from the top and falls through the pegs, so we aim at the **top
-of the densest peg column** (the orb's entry point) to pass through the most pegs.
-**Special** (green/refresh) and **crit** (orange) pegs are worth more, so if any
-are present we aim at their densest column instead of the plain pegs.
+Priority, per the orb's "accumulate damage then deal it on exit" model:
+1. **Crit peg** — aim at the top-most crit peg so the orb routes through it early;
+   crit applies to the whole chain that shot (the single highest-value play).
+2. **Refresh peg** when the board is nearly empty — extends the shot by refilling.
+3. Otherwise aim at the **top of the densest peg column** to hit the most pegs.
 
-Pegs are ``(x, y, kind)`` from ``vision.detect_pegs``. This is a simple, fast
-heuristic; richer policies (trajectory simulation / an RL agent over aim angles)
-can replace ``choose_aim`` later.
+Pegs are ``(x, y, kind)`` from ``vision.detect_pegs``. A richer policy
+(trajectory simulation / RL over aim angles) can replace ``choose_aim`` later.
 """
 
 from __future__ import annotations
@@ -17,7 +17,11 @@ import numpy as np
 from .vision import DEFAULT_BOARD, board_box
 
 BAND_WIDTH_PX = 80
-PRIORITY_KINDS = ("special", "crit")
+THIN_BOARD = 8  # pegs remaining at/below which a refresh peg is worth targeting
+
+
+def _topmost(pegs):
+    return min(pegs, key=lambda p: p[1])  # smallest y = highest on screen
 
 
 def choose_aim(pegs, frame_shape, board=DEFAULT_BOARD):
@@ -27,11 +31,19 @@ def choose_aim(pegs, frame_shape, board=DEFAULT_BOARD):
     if not pegs:
         return ((left + right) // 2, top + (bottom - top) // 5)
 
-    priority = [p for p in pegs if p[2] in PRIORITY_KINDS]
-    pool = priority if priority else pegs
+    crit = [p for p in pegs if p[2] == "crit"]
+    if crit:
+        x, y, _ = _topmost(crit)
+        return (x, y)
 
-    xs = np.array([p[0] for p in pool])
-    ys = np.array([p[1] for p in pool])
+    refresh = [p for p in pegs if p[2] == "refresh"]
+    if refresh and len(pegs) <= THIN_BOARD:
+        x, y, _ = _topmost(refresh)
+        return (x, y)
+
+    # Densest vertical column of all pegs.
+    xs = np.array([p[0] for p in pegs])
+    ys = np.array([p[1] for p in pegs])
 
     bins = max(4, (right - left) // BAND_WIDTH_PX)
     histogram, edges = np.histogram(xs, bins=bins, range=(left, right))
@@ -40,10 +52,7 @@ def choose_aim(pegs, frame_shape, board=DEFAULT_BOARD):
     low, high = edges[densest], edges[densest + 1]
     in_band = (xs >= low) & (xs <= high)
 
-    target_x = int(xs[in_band].mean())
-    target_y = int(ys[in_band].min())  # top of the densest column
-
-    return (target_x, target_y)
+    return (int(xs[in_band].mean()), int(ys[in_band].min()))
 
 
 __all__ = ["choose_aim"]

@@ -1,8 +1,8 @@
 import offshoot
 
 
-class PeglinGameAgentPlugin(offshoot.Plugin):
-    name = "PeglinGameAgentPlugin"
+class SerpentPeglinGameAgentPlugin(offshoot.Plugin):
+    name = "SerpentPeglinGameAgentPlugin"
     version = "0.1.0"
 
     libraries = []
@@ -25,4 +25,4 @@ class PeglinGameAgentPlugin(offshoot.Plugin):
 
 
 if __name__ == "__main__":
-    offshoot.executable_hook(PeglinGameAgentPlugin)
+    offshoot.executable_hook(SerpentPeglinGameAgentPlugin)

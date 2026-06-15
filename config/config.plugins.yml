@@ -1,1 +1,4 @@
-# Stub to make unit testing possible...
+SerpentPeglinGameAgentPlugin:
+  frame_handler: PLAY
+SerpentPeglinGamePlugin:
+  fps: 4

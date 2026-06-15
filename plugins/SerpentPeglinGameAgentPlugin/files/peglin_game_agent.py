@@ -1,10 +1,11 @@
 """Peglin game agent.
 
 Each step, with a short cooldown between actions:
-1. If a green **Continue** button is on screen (rewards / level-up / confirm), click
-   it to advance — these screens have no peg field, so the agent would otherwise stall.
-2. Otherwise, if pegs are detected (combat), aim at the densest special/crit peg
-   column and fire the orb.
+1. If a green **Continue** button is on screen (rewards / level-up / confirm), buy
+   the offered relics/potions and then click it — these screens have no peg field,
+   so the agent would otherwise stall (and would never collect any upgrades).
+2. Otherwise, if pegs are detected (combat), aim crit-peg-first (then refresh when
+   the board is thin, else the densest peg column) and fire the orb.
 3. Otherwise wait (mid-bounce, or a screen we don't handle yet).
 
 Vision is in ``helpers/vision.py``, the aim policy in ``helpers/strategy.py``, and
@@ -38,13 +39,13 @@ class SerpentPeglinGameAgent(GameAgent):
 
         frame = game_frame.frame
 
-        # 1) Advance reward / level-up / confirm screens (checked first: these
-        #    yield spurious "pegs", but combat has no large green button).
+        # 1) Reward / level-up / confirm screens (checked first: these yield
+        #    spurious "pegs", but combat has no large green button). Buy the
+        #    offered relics/potions first, then advance with Continue.
         button = navigation.find_continue_button(frame)
         if button is not None:
-            self._click(*button)
+            self._handle_reward_screen(frame, button)
             self._last_action = time.perf_counter()
-            print(f"Peglin: advancing menu -> clicked Continue at {button}")
             return
 
         # 2) Combat: aim at the best peg column and fire.
@@ -57,6 +58,23 @@ class SerpentPeglinGameAgent(GameAgent):
         self._click(aim_x, aim_y)
         self._last_action = time.perf_counter()
         print(f"Peglin: {len(pegs)} pegs -> aim ({aim_x}, {aim_y})")
+
+    def _handle_reward_screen(self, frame, continue_button):
+        # Reward rows offer relics/potions to pick up — click each before
+        # continuing so the run actually accumulates upgrades. We only target the
+        # top item row (avoids the "Upgrade an Orb" sub-screen lower down, which
+        # needs its own handling). Best-effort: a click may open a confirm popup,
+        # which the next Continue press dismisses.
+        items = vision.detect_reward_items(frame)
+        for item_x, item_y in items:
+            self._click(item_x, item_y)
+            time.sleep(0.4)
+
+        self._click(*continue_button)
+        print(
+            f"Peglin: reward screen -> picked {len(items)} item(s), "
+            f"clicked Continue at {continue_button}"
+        )
 
     def _click(self, frame_x, frame_y):
         # Pass window-relative (frame) coords: InputController.move() adds the

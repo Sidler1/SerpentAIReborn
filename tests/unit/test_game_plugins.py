@@ -55,16 +55,16 @@ PLUGINS = [
         "plugins.YouMustBuildABoatGameAgentPlugin.files.you_must_build_a_boat_game_agent",
     ),
     (
-        "plugins/PeglinGamePlugin/files/peglin_game.py",
+        "plugins/SerpentPeglinGamePlugin/files/peglin_game.py",
         "Game",
         "SerpentPeglinGame",
-        "plugins.PeglinGamePlugin.files.peglin_game",
+        "plugins.SerpentPeglinGamePlugin.files.peglin_game",
     ),
     (
-        "plugins/PeglinGameAgentPlugin/files/peglin_game_agent.py",
+        "plugins/SerpentPeglinGameAgentPlugin/files/peglin_game_agent.py",
         "GameAgent",
         "SerpentPeglinGameAgent",
-        "plugins.PeglinGameAgentPlugin.files.peglin_game_agent",
+        "plugins.SerpentPeglinGameAgentPlugin.files.peglin_game_agent",
     ),
 ]
 
