@@ -267,6 +267,60 @@ def plugins():
     print("\n".join(inactive_plugins or ["No inactive plugins..."]))
 
 
+def installed_plugins_for_pluggable(pluggable):
+    """Names of installed (manifest) plugins that provide the given pluggable."""
+    names = []
+
+    for name, metadata in offshoot.Manifest().list_plugins().items():
+        if any(f.get("pluggable") == pluggable for f in metadata.get("files", [])):
+            names.append(name)
+
+    return sorted(names)
+
+
+def _print_named_list(title, names):
+    print(f"\n{title}:\n")
+    print("\n".join(names or ["(none)"]))
+
+
+def games():
+    _print_named_list("Installed Game plugins", installed_plugins_for_pluggable("Game"))
+
+
+def game_agents():
+    _print_named_list("Installed Game Agent plugins", installed_plugins_for_pluggable("GameAgent"))
+
+
+def rl_agents():
+    # RL agents are framework-provided implementations (not offshoot plugins).
+    _print_named_list(
+        "Built-in Reinforcement Learning agents",
+        ["RandomAgent", "RecorderAgent", "RainbowDQNAgent", "PPOAgent"],
+    )
+
+
+def show_plugins():
+    print(os.path.abspath(offshoot.config["file_paths"]["plugins"]))
+
+
+def game_instructions(game_name):
+    game = initialize_game(game_name)
+    instructions = getattr(game, "instructions", None) or getattr(game.__class__, "instructions", None)
+
+    if instructions:
+        print(instructions)
+    else:
+        print(f"'{game_name}' provides no instructions.")
+
+
+def download_plugin(url):
+    plugins_directory = offshoot.config["file_paths"]["plugins"]
+    os.makedirs(plugins_directory, exist_ok=True)
+
+    print(f"Cloning plugin from {url} into '{plugins_directory}'...")
+    subprocess.call(shlex.split(f"git -C {shlex.quote(plugins_directory)} clone {shlex.quote(url)}"))
+
+
 def launch(game_name):
     game = initialize_game(game_name)
     game.launch()

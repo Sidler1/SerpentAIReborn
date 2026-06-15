@@ -142,16 +142,19 @@ def download(module):
             )
 
 
-@click.command(help="Download and install a plugin from GitHub")
-def download_plugin():
-    # TODO: Implement
-    pass
+@click.command(help="Clone a plugin from a git URL into the plugins directory")
+@click.argument("url")
+def download_plugin(url):
+    from serpent import serpent
+
+    serpent.download_plugin(url)
 
 
-@click.command(help="Open the plugin directory")
+@click.command(help="Print the plugins directory path")
 def show_plugins():
-    # TODO: Implement
-    pass
+    from serpent import serpent
+
+    serpent.show_plugins()
 
 
 @click.command(help="List all locally-available plugins")
@@ -163,26 +166,31 @@ def plugins():
 
 @click.command(help="List the installed game plugins")
 def games():
-    # TODO: Implement
-    pass
+    from serpent import serpent
+
+    serpent.games()
 
 
 @click.command(help="List the installed game agent plugins")
 def game_agents():
-    # TODO: Implement
-    pass
+    from serpent import serpent
+
+    serpent.game_agents()
 
 
-@click.command(help="List the installed reinforcement learning agent plugins")
+@click.command(help="List the built-in reinforcement learning agents")
 def rl_agents():
-    # TODO: Implement
-    pass
+    from serpent import serpent
+
+    serpent.rl_agents()
 
 
 @click.command(help="Display instructions from a game plugin")
-def game_instructions():
-    # TODO: Implement
-    pass
+@click.argument("game_name")
+def game_instructions(game_name):
+    from serpent import serpent
+
+    serpent.game_instructions(game_name)
 
 
 @click.command(help="Launch a game through a plugin")
