@@ -1,4 +1,4 @@
-from redis import StrictRedis
+from serpent.transport import get_transport
 from datetime import datetime, timezone
 from pprint import pprint
 
@@ -18,7 +18,7 @@ class AnalyticsClient:
             raise AnalyticsClientError("'project_key' kwarg is expected...")
 
         self.project_key = project_key
-        self.redis_client = StrictRedis(**config["redis"])
+        self.transport = get_transport()
 
         self.broadcast = config["analytics"].get("broadcast", False)
         self.debug = config["analytics"].get("debug", False)
@@ -43,4 +43,4 @@ class AnalyticsClient:
                 pprint(event)
 
             if self.broadcast:
-                self.redis_client.lpush(self.redis_key, json.dumps(event))
+                self.transport.lpush(self.redis_key, json.dumps(event))

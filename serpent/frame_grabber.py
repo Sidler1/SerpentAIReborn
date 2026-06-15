@@ -2,9 +2,8 @@ import numpy as np
 
 import mss
 
-from redis import StrictRedis
-
 from serpent.config import config
+from serpent.transport import get_transport
 
 import time
 
@@ -14,7 +13,7 @@ from serpent.game_frame_buffer import GameFrameBuffer
 from serpent.frame_transformation_pipeline import FrameTransformationPipeline
 
 
-redis_client = StrictRedis(**config["redis"])
+transport = get_transport()
 
 
 class FrameGrabber:
@@ -29,7 +28,7 @@ class FrameGrabber:
         self.frame_time = 1 / fps
         self.frame_buffer_size = buffer_seconds * fps
 
-        self.redis_client = redis_client
+        self.transport = transport
         self.screen_grabber = mss.mss()
 
         self.frame_transformation_pipeline = None
@@ -38,8 +37,8 @@ class FrameGrabber:
             self.frame_transformation_pipeline = FrameTransformationPipeline(pipeline_string=pipeline_string)
 
         # Clear any previously stored frames
-        self.redis_client.delete(config["frame_grabber"]["redis_key"])
-        self.redis_client.delete(config["frame_grabber"]["redis_key"] + "_PIPELINE")
+        self.transport.delete(config["frame_grabber"]["redis_key"])
+        self.transport.delete(config["frame_grabber"]["redis_key"] + "_PIPELINE")
 
     def start(self):
         while True:
@@ -57,8 +56,8 @@ class FrameGrabber:
 
             frame_bytes = f"{cycle_start}~{frame_shape}~{frame_dtype}~".encode("utf-8") + frame.tobytes()
 
-            self.redis_client.lpush(config["frame_grabber"]["redis_key"], frame_bytes)
-            self.redis_client.ltrim(config["frame_grabber"]["redis_key"], 0, self.frame_buffer_size)
+            self.transport.lpush(config["frame_grabber"]["redis_key"], frame_bytes)
+            self.transport.ltrim(config["frame_grabber"]["redis_key"], 0, self.frame_buffer_size)
 
             if self._has_png_transformation_pipeline():
                 frame_pipeline_shape = "PNG"
@@ -71,8 +70,8 @@ class FrameGrabber:
 
                 frame_pipeline_bytes = f"{cycle_start}~{frame_pipeline_shape}~{frame_pipeline_dtype}~".encode("utf-8") + frame_pipeline.tobytes()
 
-            self.redis_client.lpush(config["frame_grabber"]["redis_key"] + "_PIPELINE", frame_pipeline_bytes)
-            self.redis_client.ltrim(config["frame_grabber"]["redis_key"] + "_PIPELINE", 0, self.frame_buffer_size)
+            self.transport.lpush(config["frame_grabber"]["redis_key"] + "_PIPELINE", frame_pipeline_bytes)
+            self.transport.ltrim(config["frame_grabber"]["redis_key"] + "_PIPELINE", 0, self.frame_buffer_size)
 
             cycle_end = time.time()
 
@@ -105,7 +104,7 @@ class FrameGrabber:
     @classmethod
     def get_frames(cls, frame_buffer_indices, frame_type="FULL", **kwargs):
         while True:
-            if redis_client.llen(config["frame_grabber"]["redis_key"]) > 149:
+            if transport.llen(config["frame_grabber"]["redis_key"]) > 149:
                 break
             
             time.sleep(0.1)
@@ -116,7 +115,7 @@ class FrameGrabber:
             redis_key = config["frame_grabber"]["redis_key"]
             redis_key = redis_key + "_PIPELINE" if frame_type == "PIPELINE" else redis_key
 
-            frame_data = redis_client.lindex(redis_key, i)
+            frame_data = transport.lindex(redis_key, i)
 
             timestamp, shape, dtype, frame_bytes = frame_data.split("~".encode("utf-8"), maxsplit=3)
 
@@ -135,7 +134,7 @@ class FrameGrabber:
     @classmethod
     def get_frames_with_pipeline(cls, frame_buffer_indices, **kwargs):
         while True:
-            if redis_client.llen(config["frame_grabber"]["redis_key"]) > 149:
+            if transport.llen(config["frame_grabber"]["redis_key"]) > 149:
                 break
 
             time.sleep(0.1)
@@ -149,7 +148,7 @@ class FrameGrabber:
             redis_keys = [config["frame_grabber"]["redis_key"], config["frame_grabber"]["redis_key"] + "_PIPELINE"]
 
             for index, redis_key in enumerate(redis_keys):
-                frame_data = redis_client.lindex(redis_key, i)
+                frame_data = transport.lindex(redis_key, i)
 
                 timestamp, shape, dtype, frame_bytes = frame_data.split("~".encode("utf-8"), maxsplit=3)
 

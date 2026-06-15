@@ -6,6 +6,7 @@ import offshoot
 import subprocess
 import signal
 import shlex
+import threading
 import time
 import os, os.path
 import atexit
@@ -19,6 +20,8 @@ from serpent.window_controller import WindowController
 from serpent.input_controller import InputController, InputControllers
 
 from serpent.frame_grabber import FrameGrabber
+
+from serpent.transport import get_transport
 from serpent.game_frame_limiter import GameFrameLimiter
 
 from serpent.sprite import Sprite
@@ -29,8 +32,6 @@ import skimage.io
 import skimage.color
 
 import numpy as np
-
-from redis import StrictRedis
 
 from serpent.config import config
 
@@ -47,7 +48,16 @@ class Game(offshoot.Pluggable):
 
         self.platform = kwargs.get("platform")
 
-        default_input_controller_backend = InputControllers.CLIENT
+        # With the in-process transport there is no cross-process Redis bus, so the
+        # agent drives a real input backend directly instead of the CLIENT backend
+        # (which queues onto Redis for a separate worker process to apply).
+        if config.get("transport", {}).get("backend", "redis") == "in_process":
+            default_input_controller_backend = (
+                InputControllers.NATIVE_WIN32 if is_windows() else InputControllers.PYAUTOGUI
+            )
+        else:
+            default_input_controller_backend = InputControllers.CLIENT
+
         self.input_controller = kwargs.get("input_controller") or default_input_controller_backend
 
         self.window_id = None
@@ -75,7 +85,11 @@ class Game(offshoot.Pluggable):
 
         self.sprites = self._discover_sprites()
 
-        self.redis_client = StrictRedis(**config["redis"])
+        self.transport = get_transport()
+        self.transport_backend = config.get("transport", {}).get("backend", "redis")
+
+        self.frame_grabber_thread = None
+        self.input_controller_thread = None
 
         self.pause_callback_fired = False
 
@@ -146,9 +160,9 @@ class Game(offshoot.Pluggable):
         self.launch(dry_run=True)
 
         self.start_frame_grabber()
-        self.redis_client.delete(config["frame_grabber"]["redis_key"])
+        self.transport.delete(config["frame_grabber"]["redis_key"])
 
-        while self.redis_client.llen(config["frame_grabber"]["redis_key"]) == 0:
+        while self.transport.llen(config["frame_grabber"]["redis_key"]) == 0:
             time.sleep(0.1)
 
         self.window_controller.focus_window(self.window_id)
@@ -216,9 +230,9 @@ class Game(offshoot.Pluggable):
                 self.frame_transformation_pipeline_string += "|PNG"
 
         self.start_frame_grabber()
-        self.redis_client.delete(config["frame_grabber"]["redis_key"])
+        self.transport.delete(config["frame_grabber"]["redis_key"])
 
-        while self.redis_client.llen(config["frame_grabber"]["redis_key"]) == 0:
+        while self.transport.llen(config["frame_grabber"]["redis_key"]) == 0:
             time.sleep(0.1)
 
         self.window_controller.focus_window(self.window_id)
@@ -272,9 +286,25 @@ class Game(offshoot.Pluggable):
         if self.frame_grabber_process is not None:
             self.stop_frame_grabber()
 
-        frame_grabber_command = f"serpent grab_frames {self.window_geometry['width']} {self.window_geometry['height']} {self.window_geometry['x_offset']} {self.window_geometry['y_offset']}"
-
         pipeline_string = pipeline_string or self.frame_transformation_pipeline_string
+
+        # In-process transport: run the grabber as a thread so it shares the
+        # in-memory bus with the play loop (a subprocess wouldn't share memory).
+        if self.transport_backend == "in_process":
+            frame_grabber = FrameGrabber(
+                width=self.window_geometry["width"],
+                height=self.window_geometry["height"],
+                x_offset=self.window_geometry["x_offset"],
+                y_offset=self.window_geometry["y_offset"],
+                pipeline_string=pipeline_string,
+            )
+
+            self.frame_grabber_thread = threading.Thread(target=frame_grabber.start, daemon=True)
+            self.frame_grabber_thread.start()
+
+            return
+
+        frame_grabber_command = f"serpent grab_frames {self.window_geometry['width']} {self.window_geometry['height']} {self.window_geometry['x_offset']} {self.window_geometry['y_offset']}"
 
         if pipeline_string is not None:
             frame_grabber_command += f" {pipeline_string}"
@@ -307,7 +337,12 @@ class Game(offshoot.Pluggable):
         if self.input_controller_process is not None:
             self.stop_input_controller()
 
-        self.redis_client.set("SERPENT:GAME", self.__class__.__name__)
+        self.transport.set("SERPENT:GAME", self.__class__.__name__)
+
+        # In-process transport: the agent drives a real input backend directly
+        # (see __init__), so no separate Redis-consuming worker is needed.
+        if self.transport_backend == "in_process":
+            return
 
         input_controller_command = (
             "python -m serpent.input_controllers.redis_input_controller_worker"

@@ -26,7 +26,7 @@ uv run serpent --help         # the CLI (setup, plugins, games, launch, train, p
 Most runtime commands assume the **repo root is the working directory** (see config note below).
 
 ### Runtime prerequisites (to actually run a game agent, not just tests)
-- **Redis** on `localhost:6379` — the data bus for frames, input events, and analytics (being abstracted behind a pluggable transport; see roadmap).
+- **Redis** on `localhost:6379` — required only for the **default `redis` transport**. The bus (frames, input, analytics) goes through `serpent/transport` (`transport.backend: redis | in_process` in config). `in_process` needs no Redis but runs the grabber as a thread and drives input directly (single process); `redis` keeps the multi-process model (grabber/input worker as subprocesses).
 - **`config/config.yml`** must exist in the CWD — `serpent/config.py` reads it **at import time** and raises if missing. The repo ships a stub `config/config.yml` + `config/config.plugins.yml` "to make unit testing possible."
 - **Tesseract** for OCR (`pytesseract`); an **X11** session for the current input/window backends (Wayland support is a roadmap phase).
 - Plugins are discovered from a `plugins/` directory (git-ignored) created by the CLI/SDK.
@@ -37,7 +37,7 @@ Built on **offshoot**, a tiny plugin framework **vendored into the repo at `./of
 
 ### The frame pipeline (core loop)
 1. `Game.launch()` uses a **game launcher** (`serpent/game_launchers/`, e.g. Steam) and a **window controller** to find/focus/size the game window.
-2. `serpent/frame_grabber.py` (`FrameGrabber`, the **only** `mss` call site) captures the window region in a separate process and pushes raw frame bytes onto Redis.
+2. `serpent/frame_grabber.py` (`FrameGrabber`, the **only** `mss` call site) captures the window region and pushes raw frame bytes onto the transport (`get_transport()`), as `timestamp~shape~dtype~bytes`.
 3. The agent loop, rate-limited by `serpent/game_frame_limiter.py`, reads the latest frame (`GameFrame`/`GameFrameBuffer`), optionally runs it through the **frame transformation pipeline** (`serpent/frame_transformation_pipeline.py` + `frame_transformer.py` — resize/grayscale/CROP/etc., configured by a pipeline string), and hands it to the agent.
 4. A `GameAgent` dispatches frames to a **frame handler** (PLAY / COLLECT_FRAMES / etc.) selected by plugin config.
 

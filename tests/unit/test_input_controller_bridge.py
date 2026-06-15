@@ -24,11 +24,11 @@ class _CapturingRedis:
 def _dispatch(call):
     """Run a ClientInputController call, then replay its payload onto a mock."""
     client = ClientInputController(game=None)
-    client.redis_client = _CapturingRedis()
+    client.transport = _CapturingRedis()
 
     call(client)
 
-    func_name, *args, kwargs = pickle.loads(client.redis_client.items[0])
+    func_name, *args, kwargs = pickle.loads(client.transport.items[0])
 
     target = MagicMock()
     getattr(target, func_name)(*args, **kwargs)

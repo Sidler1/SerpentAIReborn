@@ -1,6 +1,6 @@
 import pickle
 
-from redis import StrictRedis
+from serpent.transport import get_transport
 
 import offshoot
 
@@ -23,9 +23,9 @@ class RedisInputControllerWorker:
     def run(cls):
         print(f"Starting {cls.__name__}...")
 
-        redis_client = StrictRedis(**config["redis"])
+        transport = get_transport()
 
-        game_class_name = redis_client.get("SERPENT:GAME").decode("utf-8")
+        game_class_name = transport.get("SERPENT:GAME").decode("utf-8")
         game_class = offshoot.discover("Game")[game_class_name]
 
         game = game_class()
@@ -46,7 +46,7 @@ class RedisInputControllerWorker:
         redis_key = config["input_controller"]["redis_key"]
 
         while True:
-            _, payload = redis_client.brpop(redis_key)
+            _, payload = transport.brpop(redis_key)
             func_name, *args, kwargs = pickle.loads(payload)
 
             getattr(input_controller, func_name)(*args, **kwargs)

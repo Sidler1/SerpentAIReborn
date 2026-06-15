@@ -37,7 +37,7 @@ import skimage.io
 import skimage.transform
 import skimage.util
 
-from redis import StrictRedis
+from serpent.transport import get_transport
 
 from datetime import datetime
 
@@ -56,7 +56,7 @@ class GameAgent(offshoot.Pluggable):
 
         self.config = config.get(f"{self.__class__.__name__}Plugin") or dict()
 
-        self.redis_client = StrictRedis(**config["redis"])
+        self.transport = get_transport()
 
         self.input_controller = kwargs["input_controller"]
         self.machine_learning_models = dict()
@@ -288,10 +288,10 @@ class GameAgent(offshoot.Pluggable):
         InputRecorder.pause_input_recording()
 
         input_events = list()
-        input_event_count = self.redis_client.llen(config["input_recorder"]["redis_key"])
+        input_event_count = self.transport.llen(config["input_recorder"]["redis_key"])
 
         for i in range(input_event_count):
-            input_events.append(pickle.loads(self.redis_client.lpop(config["input_recorder"]["redis_key"])))
+            input_events.append(pickle.loads(self.transport.lpop(config["input_recorder"]["redis_key"])))
 
         data = self._merge_frames_and_input_events(input_events)
 
