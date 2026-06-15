@@ -12,9 +12,10 @@ Run with ``serpent dashboard`` (or ``serpent.dashboard.app.run()``). Use the
 
 from __future__ import annotations
 
+import asyncio
 import threading
 
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
 
 from serpent.config import config
@@ -46,11 +47,7 @@ _PAGE = """<!doctype html>
   <table><thead><tr><th>timestamp</th><th>event</th><th>data</th></tr></thead>
   <tbody id="events"></tbody></table>
   <script>
-    async function refresh() {{
-      const [summary, events] = await Promise.all([
-        fetch("/api/summary").then(r => r.json()),
-        fetch("/api/events?limit=100").then(r => r.json()),
-      ]);
+    function render({{summary, events}}) {{
       document.getElementById("summary").innerHTML = Object.entries(summary)
         .map(([k, n]) => `<div class="metric"><div>${{k}}</div><div class="n">${{n}}</div></div>`)
         .join("");
@@ -59,8 +56,21 @@ _PAGE = """<!doctype html>
                 + `<td>${{JSON.stringify(e.data)}}</td></tr>`)
         .join("");
     }}
-    refresh();
-    setInterval(refresh, 1000);
+    async function poll() {{
+      const [summary, events] = await Promise.all([
+        fetch("/api/summary").then(r => r.json()),
+        fetch("/api/events?limit=100").then(r => r.json()),
+      ]);
+      render({{summary, events}});
+    }}
+    // Prefer the live WebSocket feed; fall back to polling if it drops.
+    function connect() {{
+      const ws = new WebSocket(`ws://${{location.host}}/ws`);
+      ws.onmessage = (m) => render(JSON.parse(m.data));
+      ws.onclose = () => {{ poll(); setTimeout(connect, 2000); }};
+      ws.onerror = () => ws.close();
+    }}
+    connect();
   </script>
 </body></html>"""
 
@@ -88,6 +98,18 @@ def create_app(project_key=None, db_path=None, start_consumer=False) -> FastAPI:
     @app.get("/", response_class=HTMLResponse)
     def index() -> str:
         return _PAGE.format(key=key)
+
+    @app.websocket("/ws")
+    async def ws(websocket: WebSocket, interval: float = 1.0):
+        await websocket.accept()
+        try:
+            while True:
+                await websocket.send_json(
+                    {"summary": store.event_counts(), "events": store.recent_events(100)}
+                )
+                await asyncio.sleep(interval)
+        except WebSocketDisconnect:
+            return
 
     return app
 

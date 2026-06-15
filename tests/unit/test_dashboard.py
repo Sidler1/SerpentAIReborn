@@ -74,3 +74,16 @@ def test_dashboard_api_and_page(tmp_path, in_process_transport):
     page = client.get("/")
     assert page.status_code == 200
     assert "Serpent.AI Dashboard" in page.text
+
+
+def test_dashboard_websocket_pushes_state(tmp_path, in_process_transport):
+    app = create_app(project_key="PROJ", db_path=tmp_path / "a.sqlite", start_consumer=False)
+    app.state.store.record_event(_event("REWARD", 7))
+
+    client = TestClient(app)
+
+    with client.websocket_connect("/ws") as ws:
+        payload = ws.receive_json()
+
+    assert payload["summary"] == {"REWARD": 1}
+    assert payload["events"][0]["event_key"] == "REWARD"
