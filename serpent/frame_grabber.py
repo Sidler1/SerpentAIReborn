@@ -1,8 +1,7 @@
 import numpy as np
 
-import mss
-
 from serpent.config import config
+from serpent.screen_capture import ScreenCapture
 from serpent.transport import get_transport
 
 import time
@@ -30,7 +29,7 @@ class FrameGrabber:
 
         self.transport = transport
 
-        # Created lazily in grab_frame() so the mss/X11 connection is opened in the
+        # Created lazily in grab_frame() so any X11/mss connection is opened in the
         # thread that uses it (the in-process transport runs the grabber in a
         # thread; an mss instance is not safe to share across threads).
         self.screen_grabber = None
@@ -89,21 +88,9 @@ class FrameGrabber:
 
     def grab_frame(self):
         if self.screen_grabber is None:
-            self.screen_grabber = mss.mss()
+            self.screen_grabber = ScreenCapture()
 
-        frame = np.array(
-            self.screen_grabber.grab({
-                "top": self.y_offset,
-                "left": self.x_offset,
-                "width": self.width,
-                "height": self.height
-            }),
-            dtype="uint8"
-        )
-
-        frame = frame[..., [2, 1, 0, 3]]
-
-        return frame[..., :3]
+        return self.screen_grabber.grab(self.y_offset, self.x_offset, self.width, self.height)
 
     def _has_png_transformation_pipeline(self):
         return self.frame_transformation_pipeline and self.frame_transformation_pipeline.pipeline_string and self.frame_transformation_pipeline.pipeline_string.endswith("|PNG")

@@ -33,10 +33,12 @@ Finish the work that 0.1.0 deliberately deferred or scaffolded. These are
 - Dashboard live updates over **WebSocket** (with polling fallback).
 - **PyPI release workflow** (tag-triggered, Trusted Publishing).
 - Modernized `serpent/` modules now **gated by ruff in CI**.
+- **Wayland screen capture** via spectacle on KDE (`serpent/screen_capture.py`) — mss/XGetImage fails under XWayland.
 
 ### Native Wayland backends
-Today capture/input/window only work via **XWayland**; `serpent/window_controllers/wayland_window_controller.py` is a stub.
-- **Capture:** `xdg-desktop-portal` ScreenCast → PipeWire stream.
+Capture now works on Wayland (spectacle/KDE); **input and window control still go
+through XWayland** (xdotool/pyautogui). Remaining:
+- **Capture (faster path):** `xdg-desktop-portal` ScreenCast → PipeWire stream (continuous; spectacle spawns a process per frame, ~1.5 fps).
 - **Input:** `ydotool`/libei over `uinput` (with the `ydotoold` setup documented).
 - **Window control:** KWin D-Bus / `kdotool` (KDE) and the wlroots foreign-toplevel protocol; wire into the `WindowController` dispatch.
 

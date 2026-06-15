@@ -37,7 +37,7 @@ Built on **offshoot**, a tiny plugin framework **vendored into the repo at `./of
 
 ### The frame pipeline (core loop)
 1. `Game.launch()` uses a **game launcher** (`serpent/game_launchers/`, e.g. Steam) and a **window controller** to find/focus/size the game window.
-2. `serpent/frame_grabber.py` (`FrameGrabber`, the **only** `mss` call site) captures the window region and pushes raw frame bytes onto the transport (`get_transport()`), as `timestamp~shape~dtype~bytes`.
+2. `serpent/frame_grabber.py` (`FrameGrabber`) captures the window region via `serpent/screen_capture.py::ScreenCapture` and pushes raw frame bytes onto the transport (`get_transport()`), as `timestamp~shape~dtype~bytes`. **Capture backend:** `mss` on native X11; **spectacle** on Wayland (mss/XGetImage fails under XWayland — KDE raises BadMatch), grabbing the full desktop and cropping to the window. (A PipeWire/portal backend is the faster future path.)
 3. The agent loop, rate-limited by `serpent/game_frame_limiter.py`, reads the latest frame (`GameFrame`/`GameFrameBuffer`), optionally runs it through the **frame transformation pipeline** (`serpent/frame_transformation_pipeline.py` + `frame_transformer.py` — resize/grayscale/CROP/etc., configured by a pipeline string), and hands it to the agent.
 4. A `GameAgent` dispatches frames to a **frame handler** (PLAY / COLLECT_FRAMES / etc.) selected by plugin config.
 

@@ -51,6 +51,7 @@ jobs:
     env:
       MODERN_PATHS: >-
         serpent/transport
+        serpent/screen_capture.py
         serpent/dashboard
         serpent/visual_debugger/server.py
         serpent/visual_debugger/visual_debugger.py
