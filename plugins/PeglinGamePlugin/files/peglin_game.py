@@ -27,13 +27,13 @@ class PeglinGame(Game, metaclass=Singleton):
 
     @property
     def screen_regions(self):
-        # PLACEHOLDER regions (top, left, bottom, right) — calibrate to your
-        # resolution/layout, e.g. with `serpent capture region Peglin`. They are
-        # not required by the bundled reference agent (which uses window geometry).
+        # (top, left, bottom, right) for a 1280x720 *windowed* game. PEG_BOARD
+        # mirrors helpers/vision.DEFAULT_BOARD; the rest are best-guess starting
+        # points — calibrate with `serpent capture region Peglin` once running.
         return {
-            "ENEMY_AREA": (0, 0, 0, 0),
-            "PEG_BOARD": (0, 0, 0, 0),
-            "PLAYER_HP": (0, 0, 0, 0),
-            "ENEMY_HP": (0, 0, 0, 0),
-            "ORB_COUNT": (0, 0, 0, 0),
+            "ENEMY_AREA": (0, 256, 108, 1024),   # enemies across the top
+            "PEG_BOARD": (108, 256, 648, 1024),  # central peg field (agent's board)
+            "PLAYER_HP": (650, 0, 720, 320),     # bottom-left HUD
+            "ENEMY_HP": (0, 256, 40, 1024),      # enemy health bars
+            "ORB_COUNT": (650, 960, 720, 1280),  # bottom-right HUD
         }

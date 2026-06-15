@@ -1,22 +1,22 @@
-"""Peglin game agent — a runnable reference for the mouse-aim play loop.
+"""Peglin game agent.
 
-Peglin combat is turn-based: aim the orb with the mouse and left-click to fire,
-then watch it bounce. This reference agent waits a fixed number of frames between
-shots (so it doesn't spam clicks mid-bounce), aims at a point in the upper play
-area, and fires. The aiming policy is intentionally naive (random horizontal
-sweep) — replace ``_aim_point`` with a real policy (peg/enemy detection via the
-frame + screen_regions, trajectory planning, or an RL agent over discretized aim
-angles).
+Each turn: analyze the frame for pegs, aim at the densest peg column, and fire the
+orb with a left-click. Combat is turn-based, so the agent waits a cooldown between
+shots (so the orb finishes bouncing) and only fires when pegs are actually
+detected. Vision lives in ``helpers/vision.py`` and the aiming policy in
+``helpers/strategy.py``; swap those out to make it smarter.
+
+Calibrate `helpers/vision.DEFAULT_BOARD` (and add a colour mask / HP / turn-cue
+detection) against a real 1280x720 frame for best results.
 """
-
-import random
 
 from serpent.game_agent import GameAgent
 from serpent.input_controller import MouseButton
 
-# Peglin combat is turn-based; wait this many frames between shots so the orb
-# finishes bouncing before the next aim+fire.
-FIRE_INTERVAL_FRAMES = 30
+from .helpers import strategy, vision
+
+# Frames to wait between shots (combat is turn-based; let the orb finish bouncing).
+FIRE_COOLDOWN_FRAMES = 30
 
 
 class PeglinGameAgent(GameAgent):
@@ -27,30 +27,32 @@ class PeglinGameAgent(GameAgent):
         self.frame_handler_setups["PLAY"] = self.setup_play
 
     def setup_play(self):
-        self._frames_since_fire = 0
+        self._frames_since_fire = FIRE_COOLDOWN_FRAMES  # ready to fire on the first turn
 
     def handle_play(self, game_frame, game_frame_pipeline, **kwargs):
         self._frames_since_fire += 1
 
-        if self._frames_since_fire < FIRE_INTERVAL_FRAMES:
+        if self._frames_since_fire < FIRE_COOLDOWN_FRAMES:
             return
+
+        pegs = vision.detect_pegs(game_frame.frame)
+
+        if not pegs:
+            # Likely mid-bounce or not the player's turn — wait for a peg field.
+            return
+
+        aim_x, aim_y = strategy.choose_aim(pegs, game_frame.frame.shape)
+        self._fire(aim_x, aim_y)
 
         self._frames_since_fire = 0
 
-        aim_x, aim_y = self._aim_point()
+        print(f"Peglin: {len(pegs)} pegs -> aim ({aim_x}, {aim_y})")
 
-        self.input_controller.move(x=aim_x, y=aim_y, duration=0.2)
-        self.input_controller.click(button=MouseButton.LEFT)
-
-        print(f"Peglin: fired orb aimed at ({aim_x}, {aim_y})")
-
-    def _aim_point(self):
-        # Absolute screen coordinates within the upper-middle of the game window.
+    def _fire(self, frame_x, frame_y):
         geometry = self.game.window_geometry
 
-        x = geometry["x_offset"] + random.randint(
-            int(geometry["width"] * 0.30), int(geometry["width"] * 0.70)
-        )
-        y = geometry["y_offset"] + int(geometry["height"] * 0.35)
+        screen_x = geometry["x_offset"] + frame_x
+        screen_y = geometry["y_offset"] + frame_y
 
-        return x, y
+        self.input_controller.move(x=screen_x, y=screen_y, duration=0.15)
+        self.input_controller.click(button=MouseButton.LEFT)
